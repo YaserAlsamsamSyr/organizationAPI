@@ -1,0 +1,9 @@
+update organizatio ==>> the id in url is user id and the email don't sent it and password,logo,img can be sent or not
+
+create project ==>> id sent in url is user id of organization
+
+delete project ==>> first id is user id second id is project id
+
+create project ==>> id is user id
+
+update project ==>> first id is user id second id is project id
