@@ -21,9 +21,8 @@ class AuthController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
             'password' => ['required', Rules\Password::defaults()],
         ]);
-        if(!auth()->attempt(['email' => $req->email, 'password' => $req->password,'role'=>'admin'])){
+        if(!auth()->attempt(['email' => $req->email, 'password' => $req->password,'role'=>'admin']))
             return response()->json(['message'=>'password or email not correct'],422);
-       }
        $token=auth()->user()->createToken('admin',expiresAt:now()->addDays(4),abilities:['admin'])->plainTextToken;
        $data=new UserResource(auth()->user());
        return response()->json(['token'=>$token,'response'=>$data],200);
