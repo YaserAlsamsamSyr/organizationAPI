@@ -24,6 +24,10 @@ Route::prefix('masterAdmin')->group(function(){
         Route::delete('/deleteSuggest/{sugId}',[UserController::class,'deleteSuggest']);
         Route::get('/getProblems',[UserController::class,'getProblems']);
         Route::delete('/deleteProblem/{proId}',[UserController::class,'deleteProblem']);
+        // profile
+        Route::get('/myProfile',[UserController::class,'myProfile']);
+        Route::post('/updateMyProfile',[UserController::class,'updateMyProfile']);
+        
     });
 });
 // organization

@@ -47,7 +47,6 @@ class UserController extends Controller
                 return response()->json(['message'=>$err->getMessage()],422);
           }
     }
-
     public function createOrg(OrganizationRequest $req){
             try{
                 if(auth()->user()->role!=="admin")
@@ -102,7 +101,6 @@ class UserController extends Controller
                    return response()->json(['message'=>$err->getMessage(),422]);
             }
     }
-
     public function deleteOrg(string $id){
         try{
             if(auth()->user()->role!=="admin")
@@ -130,7 +128,6 @@ class UserController extends Controller
             return response()->json(['message'=>$err->getMessage()],422);
         }
     }
-
     public function updateOrg(OrganizationRequest $req,string $id){
         try{
             if(auth()->user()->role!="admin")
@@ -201,7 +198,6 @@ class UserController extends Controller
             return response()->json(['message'=>$err->getMessage(),422]);
         }
     }
-    
     public function createPro(ProjectRequest $req,string $orgId){
         try{
             if(auth()->user()->role!=="admin")
@@ -262,7 +258,6 @@ class UserController extends Controller
                return response()->json(['message'=>$err->getMessage(),422]);
         }
     }
-
     public function deletePro(string $orgId,string $proId){
         try{
             if(auth()->user()->role!=="admin")
@@ -297,7 +292,6 @@ class UserController extends Controller
             return response()->json(['message'=>$err->getMessage()],422);
         }
     }
-    
     public function updatePro(ProjectRequest $req,string $orgId,string $proId){
         try{
             if(auth()->user()->role!="admin")
@@ -425,5 +419,11 @@ class UserController extends Controller
         } catch(Exception $err){
             return response()->json(['messsage'=>$err->getMessage(),422]);
         }   
+    }
+    public function myProfile(){
+        if(auth()->user()->role!="admin")
+             return response()->json('not authorized',422);
+        $data=['id'=>auth()->user()->id,'name'=>auth()->user()->name,'email'=>auth()->user()->email];
+        return response()->json($data,200);
     }
 }
