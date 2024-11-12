@@ -426,4 +426,5 @@ class UserController extends Controller
         $data=['id'=>auth()->user()->id,'name'=>auth()->user()->name,'email'=>auth()->user()->email];
         return response()->json($data,200);
     }
+    public function updateMyProfile(Request $req){}
 }
