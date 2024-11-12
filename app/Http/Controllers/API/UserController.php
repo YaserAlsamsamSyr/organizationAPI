@@ -426,5 +426,24 @@ class UserController extends Controller
         $data=['id'=>auth()->user()->id,'name'=>auth()->user()->name,'email'=>auth()->user()->email];
         return response()->json($data,200);
     }
-    public function updateMyProfile(Request $req){}
+    public function updateMyProfile(Request $req){
+        try{  
+            if(auth()->user()->role!="admin")
+               return response()->json('not authorized',422);
+            $req->validate([
+                'name' => ['nullable', 'string', 'max:255'],
+                'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            ]);
+            $user = User::create([
+               'name' => $req->name,
+               'email' => $req->email,
+               'password' => Hash::make($req->string('password')),
+               'role'=>'admin'
+            ]);
+            $data=[];
+            return response()->json(['data'=>$data],201);
+        }catch(Exception $err){
+                return response()->json(['message'=>$err->getMessage()],422);
+          }
+    }
 }
