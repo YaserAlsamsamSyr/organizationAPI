@@ -6,7 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\OrganizationController;
 
-Route::prefix('masterAdmin')->group(function(){
+Route::middleware('allow')->prefix('masterAdmin')->group(function(){
      Route::post('/login',[AuthController::class,'adminLogin'])->middleware('guest:sanctum');
      Route::post('/register',[UserController::class,'registerNewMasterAdmin'])->middleware('guest:sanctum');
      Route::get('/logout',[AuthController::class,'logout'])->middleware('auth:sanctum');
@@ -27,25 +27,29 @@ Route::prefix('masterAdmin')->group(function(){
         // profile
         Route::get('/myProfile',[UserController::class,'myProfile']);
         Route::post('/updateMyProfile',[UserController::class,'updateMyProfile']);
-        
+        //traffic
+        Route::get('/getTraffic',[UserController::class,'getTraffic']);
+        Route::post('/addCustomerToTraffic',[UserController::class,'addCustomerToTraffic']);
     });
 });
 // organization
-Route::prefix('organization')->group(function(){
-    Route::post('/login',[AuthController::class,'orgLogin'])->middleware('guest:sanctum');
+Route::middleware('allow')->prefix('organization')->group(function(){
+    Route::post('/login',[AuthController::class,'organizationLogin'])->middleware('guest:sanctum');
     Route::get('/logout',[AuthController::class,'logout'])->middleware('auth:sanctum');
     Route::middleware(['auth:sanctum','abilities:org'])->group(function(){
-       //project
-       Route::delete('/deletePro/{proId}',[OrganizationController::class,'deletePro']);
-       Route::post('/createPro',[OrganizationController::class,'createPro']);
-       Route::post('/updatePro/{proId}',[OrganizationController::class,'updatePro']);
-       //
+        //project
+        Route::delete('/deletePro/{proId}',[OrganizationController::class,'deletePro']);
+        Route::post('/createPro',[OrganizationController::class,'createPro']);
+        Route::post('/updatePro/{proId}',[OrganizationController::class,'updatePro']);
+        //
         Route::get('/getSuggests',[UserController::class,'getSuggests']);
         Route::delete('/deleteSuggest/{sugId}',[UserController::class,'deleteSuggest']);
+        // profile
+        Route::post('/updateMyProfile',[OrganizationController::class,'updateMyProfile']);
    });
 });
 //client
-Route::prefix('client')->group(function(){
+Route::middleware('allow')->prefix('client')->group(function(){
         Route::post('/addProblem',[ClientController::class,'addProblem']);
         Route::post('/addSuggest',[ClientController::class,'addSuggest']);
         Route::get('/getProjects',[ClientController::class,'getProjects']);
@@ -53,5 +57,4 @@ Route::prefix('client')->group(function(){
         Route::post('/addRate/{proId}',[ClientController::class,'addRate']);
         Route::post('/addComment/{proId}',[ClientController::class,'addComment']);
         Route::get('/downloadPDF/{proId}',[ClientController::class,'downloadPDF']);
-        
 });

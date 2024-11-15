@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Validation\ValidationException;
 use App\Http\Requests\ProjectRequest;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Image;
 use App\Models\Project;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
+use App\Http\Requests\OrganizationRequest;
 
 class OrganizationController extends Controller
 {
@@ -70,7 +72,6 @@ class OrganizationController extends Controller
                return response()->json(['message'=>$err->getMessage(),422]);
         }
     }
-
     public function deletePro(string $proId){
         try{
             if(auth()->user()->role!=="org")
@@ -102,7 +103,6 @@ class OrganizationController extends Controller
             return response()->json(['message'=>$err->getMessage()],422);
         }
     }
-    
     public function updatePro(ProjectRequest $req,string $proId){
         try{
             if(auth()->user()->role!="org")
@@ -178,6 +178,74 @@ class OrganizationController extends Controller
                 $pro->images()->delete();
                 //
                 $pro->images()->saveMany($imgs);
+            }
+            return response()->json(['message'=>'update success'],200);
+        }catch(Exception $err){
+            return response()->json(['message'=>$err->getMessage(),422]);
+        }
+    }
+    public function updateMyProfile(OrganizationRequest $req){
+        try{
+            if(auth()->user()->role!="org")
+               return response()->json(['message'=>"not authorized"]);
+            $org=auth()->user();
+            $org->name=$req->name;
+            if($req->password!=null)
+                $org->password=Hash::make($req->string('password'));
+            $org->save();
+            $org->organization->experience=$req->experience;
+            $org->organization->details=$req->details;
+            $org->organization->skils=$req->skils;
+            // upload one image
+            if($req->hasfile('logo')) {  
+                $file=$req->file('logo');
+                $name = uniqid().'.'.$file->getClientOriginalExtension();
+                $file->move(public_path('/images/organizations/logo'),$name);
+                //delete old logo
+                $n=explode("/images/",$org->organization->logo)[1];
+                if(File::exists(public_path().'/images/'.$n)) {
+                    File::delete(public_path().'/images/'.$n);
+                }
+                //
+                $org->organization->logo=asset('/images/organizations/logo/'.$name);
+            }
+            //
+            // upload multi image
+            $imgs=[];
+            if($req->hasfile('images')) {
+                $validator=Validator::make($req->all(), [
+                    "images"    => ["required",'array',"min:1"],
+                    "images.*"  => ['required','image','mimes:jpeg,jpg,png,gif'],
+                ]);
+                if ($validator->fails())
+                    return throw ValidationException::withMessages([$validator->messages()->first()]);
+               foreach($req->file('images') as $file) {
+                   $name = uniqid().'.'.$file->getClientOriginalExtension();
+                   $file->move(public_path('/images/organizations/imgs'),$name);
+                   array_push($imgs,new Image(['url'=>asset('/images/organizations/imgs/'.$name)]));
+               }
+            }
+            //
+            $org->organization->view=$req->view;
+            $org->organization->message=$req->message;
+            $org->organization->number=$req->number;
+            $org->organization->socials=$req->socials;
+            $org->organization->address=$req->address;
+            $org->organization->phone=$req->phone;
+            $org->organization->complaints=$req->complaints;
+            $org->organization->suggests=$req->suggests;
+            $org->organization->save();
+            if(sizeof($imgs)!==0){
+                //delete old images
+                for($i=0;$i<sizeof($org->organization->images);$i++){
+                    $n=explode("/images/",$org->organization->images[$i]->url)[1];
+                    if(File::exists(public_path().'/images/'.$n)) {
+                        File::delete(public_path().'/images/'.$n);
+                    }
+                }
+                $org->organization->images()->delete();
+                //
+                $org->organization->images()->saveMany($imgs);
             }
             return response()->json(['message'=>'update success'],200);
         }catch(Exception $err){

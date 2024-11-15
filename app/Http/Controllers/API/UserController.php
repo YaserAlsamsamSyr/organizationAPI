@@ -13,6 +13,7 @@ use App\Models\Organization;
 use App\Http\Requests\OrganizationRequest;
 use Illuminate\Validation\ValidationException;
 use App\Http\Requests\ProjectRequest;
+use App\Http\Requests\TrafficRequest;
 use App\Models\Image;
 use App\Models\Project;
 use Illuminate\Support\Facades\Validator;
@@ -21,6 +22,9 @@ use App\Models\Suggest;
 use App\Http\Resources\SuggestResource;
 use App\Http\Resources\ProblemResource;
 use App\Models\Problem;
+use App\Models\Traffic;
+
+use function PHPUnit\Framework\isEmpty;
 
 class UserController extends Controller
 {
@@ -54,7 +58,7 @@ class UserController extends Controller
                 $newOrg=User::create([
                     'name'=>$req->name,
                     'email'=>$req->email,
-                    'password'=>Hash::make($req->string($req->password)),
+                    'password'=>Hash::make($req->string('password')),
                     'admin_id'=>auth()->user()->id
                 ]);
                 $org=new Organization();
@@ -421,10 +425,14 @@ class UserController extends Controller
         }   
     }
     public function myProfile(){
-        if(auth()->user()->role!="admin")
-             return response()->json('not authorized',422);
-        $data=['id'=>auth()->user()->id,'name'=>auth()->user()->name,'email'=>auth()->user()->email];
-        return response()->json($data,200);
+        try{
+            if(auth()->user()->role!="admin")
+                 return response()->json('not authorized',422);
+            $data=['id'=>auth()->user()->id,'name'=>auth()->user()->name,'email'=>auth()->user()->email];
+            return response()->json($data,200);
+        } catch(Exception $err){
+            return response()->json(['message'=>$err->getMessage()],422);
+        }
     }
     public function updateMyProfile(Request $req){
         try{  
@@ -434,16 +442,46 @@ class UserController extends Controller
                 'name' => ['nullable', 'string', 'max:255'],
                 'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
             ]);
-            $user = User::create([
-               'name' => $req->name,
-               'email' => $req->email,
-               'password' => Hash::make($req->string('password')),
-               'role'=>'admin'
-            ]);
-            $data=[];
-            return response()->json(['data'=>$data],201);
-        }catch(Exception $err){
+            
+            $user=User::find(auth()->user()->id);
+            if($req->name!=null)
+                $user->name=$req->name;
+            if($req->password!=null)
+               $user->password=Hash::make($req->string('password'));
+            $user->save();
+            return response()->json(['message'=>'update success'],201);
+        } catch(Exception $err){
                 return response()->json(['message'=>$err->getMessage()],422);
-          }
+        }
+    }
+    public function addCustomerToTraffic(TrafficRequest  $req){
+               try{
+                if(auth()->user()->role!="admin")
+                    return response()->json('not authorized',422);
+                $newTraffic=new Traffic();
+                $newTraffic->mac=$req->mac;
+                $newTraffic->day=date('d');
+                $newTraffic->month=date('m');
+                $newTraffic->year=date('y');
+                $isFound=Traffic::where('mac',$req->mac)->first();
+                if(!$isFound)//first time
+                    $newTraffic->firstTime=true;
+                else
+                    $newTraffic->firstTime=false;
+                $newTraffic->user_id=auth()->user()->id;
+                $newTraffic->save();
+                return response()->json(['message'=>'added success'],201);
+               } catch(Exception $err){
+                   return response()->json(['message'=>$err->getMessage(),422]);
+               }
+    }
+    public function getTraffic(){
+        try{
+            if(auth()->user()->role!="admin")
+                return response()->json('not authorized',422);
+            
+        } catch(Exception $err){
+            return response()->json(['message'=>$err->getMessage(),422]);
+        }
     }
 }
