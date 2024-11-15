@@ -6,7 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\OrganizationController;
 
-Route::middleware('allow')->prefix('masterAdmin')->group(function(){
+Route::middleware('HandleCors')->prefix('masterAdmin')->group(function(){
      Route::post('/login',[AuthController::class,'adminLogin'])->middleware('guest:sanctum');
      Route::post('/register',[UserController::class,'registerNewMasterAdmin'])->middleware('guest:sanctum');
      Route::get('/logout',[AuthController::class,'logout'])->middleware('auth:sanctum');
@@ -33,7 +33,7 @@ Route::middleware('allow')->prefix('masterAdmin')->group(function(){
     });
 });
 // organization
-Route::middleware('allow')->prefix('organization')->group(function(){
+Route::middleware('HandleCors')->prefix('organization')->group(function(){
     Route::post('/login',[AuthController::class,'organizationLogin'])->middleware('guest:sanctum');
     Route::get('/logout',[AuthController::class,'logout'])->middleware('auth:sanctum');
     Route::middleware(['auth:sanctum','abilities:org'])->group(function(){
@@ -49,7 +49,7 @@ Route::middleware('allow')->prefix('organization')->group(function(){
    });
 });
 //client
-Route::middleware('allow')->prefix('client')->group(function(){
+Route::middleware('HandleCors')->prefix('client')->group(function(){
         Route::post('/addProblem',[ClientController::class,'addProblem']);
         Route::post('/addSuggest',[ClientController::class,'addSuggest']);
         Route::get('/getProjects',[ClientController::class,'getProjects']);
