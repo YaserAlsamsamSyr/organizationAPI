@@ -21,7 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
             'abilities' => CheckAbilities::class,
-            'ability' => CheckForAnyAbility::class
+            'ability' => CheckForAnyAbility::class,
+            'allow'=>App\Http\Middleware\authenticate::class
         ]);
 
         //
