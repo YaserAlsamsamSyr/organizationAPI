@@ -41,6 +41,8 @@ class ClientController extends Controller
     }
     public function getProjects(){
         try {
+            $res=Project::all();
+            if($res)
             $res=ProjectResource::collection(Project::all());
             return response()->json($res,201);
         } catch(Exception $err){
@@ -49,7 +51,9 @@ class ClientController extends Controller
     }
     public function getOrganizations(){
         try {
-            $res=OrganizationResource::collection(User::where('role','org')->get());
+            $res=User::where('role','org')->get();
+            if($res)
+                $res=OrganizationResource::collection($res);
             return response()->json($res,201);
         } catch(Exception $err){
             return response()->json(['message'=>$err->getMessage()],422);
@@ -84,7 +88,7 @@ class ClientController extends Controller
     }
     public function downloadPDF(string $proId){
               try{
-                $pro=Project::find($proId);
+                $pro=Project::findOrFail($proId);
                 $pdfUrl="/images/".explode("/images/",$pro->pdfURL)[1];
                 //PDF file is stored under project/public/download/info.pdf
                 $file= public_path(). $pdfUrl;
