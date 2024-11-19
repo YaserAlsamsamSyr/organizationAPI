@@ -54,7 +54,6 @@ class UserController extends Controller
           }
     }
     public function createOrg(OrganizationRequest $req){
-           return $req;
             try{
                 if(auth()->user()->role!=="admin")
                     return throw ValidationException::withMessages(['not authorized']);
@@ -96,21 +95,29 @@ class UserController extends Controller
                 $org->phone=$req->phone;
                 $data=[];
                 $newOrg->organization()->save($org);
-                foreach($req->details as $det) 
-                   array_push($data,new Detail(['text'=>$det->text]));
-                $newOrg->organization->details()->saveMany($data);
-                $data=[];
-                foreach($req->skils as $skil) 
-                   array_push($data,new Skil(['text'=>$skil->text]));        
-                $newOrg->organization->skils()->saveMany($data);
-                $data=[];
-                foreach($req->number as $number) 
-                   array_push($data,new Number(['type'=>$number->type,'number'=>$number->number]));
-                $newOrg->organization->numbers()->saveMany($data);    
-                $data=[];
-                foreach($req->socials as $socials) 
-                   array_push($data,new Social(['type'=>$socials->type,'url'=>$socials->url]));
-                $newOrg->organization->socials()->saveMany($data);    
+                if($req->details){
+                    foreach($req->details as $det) 
+                       array_push($data,new Detail(['text'=>$det['text']]));
+                    $newOrg->organization->details()->saveMany($data);
+                    $data=[];
+                }
+                if($req->skils){
+                    foreach($req->skils as $skil) 
+                       array_push($data,new Skil(['text'=>$skil['text']]));        
+                    $newOrg->organization->skils()->saveMany($data);
+                    $data=[];
+                }
+                if($req->number){
+                    foreach($req->number as $number) 
+                       array_push($data,new Number(['type'=>$number['type'],'number'=>$number['number']]));
+                    $newOrg->organization->numbers()->saveMany($data);    
+                    $data=[];
+                }
+                if($req->socials){
+                    foreach($req->socials as $socials) 
+                       array_push($data,new Social(['type'=>$socials['type'],'url'=>$socials['url']]));
+                    $newOrg->organization->socials()->saveMany($data);    
+                }
                 if(sizeof($imgs)!==0)
                    $newOrg->organization->images()->saveMany($imgs);
                 return response()->json(['message'=>'added success'],201);
