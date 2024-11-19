@@ -51,10 +51,10 @@ class ClientController extends Controller
     }
     public function getOrganizations(){
         try {
-            $res=User::where('role','org')->get();
+            $res=User::where('role','org')->with('organization')->get();
             if($res)
                 $res=OrganizationResource::collection($res);
-            return response()->json($res,201);
+            return response()->json($res,200);
         } catch(Exception $err){
             return response()->json(['message'=>$err->getMessage()],422);
         }

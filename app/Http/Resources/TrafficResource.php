@@ -15,6 +15,8 @@ class TrafficResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'name'=>$this->user->name,
+            'email'=>$this->user->email,
             'mac'=>$this->mac,
             'date'=>$this->year."/".$this->month."/".$this->day
         ];

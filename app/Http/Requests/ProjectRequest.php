@@ -21,19 +21,26 @@ class ProjectRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'name'=> ['required', 'string', 'max:255'],
             'address'=> ['required', 'string', 'max:500'],
             'logo'=>['nullable','image','mimes:jpeg,jpg,png,gif'], 
-            'summary'=>['required', 'string', 'max:600'],
             'start_At'=>['required','date'],
             'end_At'=>['required','date'],
             'benefitDir'=>['required', 'string', 'max:15','regex:/^[0-9]+$/'],
             'benefitUnd'=>['required', 'string', 'max:15','regex:/^[0-9]+$/'],
-            'activities'=>['required', 'string', 'max:1000'],
             'rate'=>['nullable', 'string', 'max:15','regex:/^[0-9]+$/'],
             'pdfURL'=>['nullable',"mimes:pdf","max:100000"],
-            'videoURL'=>['nullable', 'string', 'max:1000']
+            'videoURL'=>['nullable', 'string', 'max:1000'],
         ];
+        
+        foreach($this->request->get('activities') as $key => $val){
+            $rules['activities.text'] = ['nullable', 'string', 'max:1000'];
+            $rules['activities.type'] = ['nullable', 'string', 'max:1000']; 
+        }
+        foreach($this->request->get('summary') as $key => $val)
+            $rules['summary.text'] = ['required', 'string', 'max:2000']; 
+
+        return $rules;
     }
 }

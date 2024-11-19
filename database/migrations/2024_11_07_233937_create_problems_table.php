@@ -13,7 +13,17 @@ return new class extends Migration
     {
         Schema::create('problems', function (Blueprint $table) {
             $table->id();
-            $table->string('text');
+            $table->date('date');
+            $table->string('number');
+            $table->string('fullName');
+            $table->string('phone');
+            $table->string('email');
+            $table->string('address');
+            $table->string('benifit');
+            $table->string('problemDate');
+            $table->string('isPrevious');
+            $table->foreignId("project_id")->nullable()->references('id')->on('projects')->onDelete('cascade');
+            $table->foreignId("organization_id")->nullable()->references('id')->on('organizations')->onDelete('cascade');
             $table->timestamps();
         });
     }

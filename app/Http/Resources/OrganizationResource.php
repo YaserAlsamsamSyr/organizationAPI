@@ -6,6 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\ImageResource;
+use App\Http\Resources\SuggestResource;
+use App\Http\Resources\SkillResource;
+use App\Http\Resources\DetailsResource;
+use App\Http\Resources\NumberResource;
+use App\Http\Resources\SocialsResource;
 
 class OrganizationResource extends JsonResource
 {
@@ -23,18 +28,17 @@ class OrganizationResource extends JsonResource
         "email"=>$this->email,
         "orgId"=>$this->organization->id,
         "experience"=>$this->organization->experience,
-        "details"=>$this->organization->details,
-        "skils"=>$this->organization->skils,
+        "details"=>DetailsResource::collection($this->organization->details),
+        "skils"=>SkillResource::collection($this->organization->skils),
         "logo"=>$this->organization->logo,
         "images"=>ImageResource::collection($this->organization->images),
         "view"=>$this->organization->view,
         "message"=>$this->organization->message,
-        "number"=>$this->organization->number,
-        "socials"=>$this->organization->socials,
+        "number"=>NumberResource::collection($this->organization->numbers),
+        "socials"=>SocialsResource::collection($this->organization->socials),
         "address"=>$this->organization->address,
         "phone"=>$this->organization->phone,
-        "complaints"=>$this->organization->complaints,
-        "suggests"=>$this->organization->suggests,
+        "suggests"=>SuggestResource::collection($this->organization->suggests),
         "projects"=>ProjectResource::collection($this->organization->projects)
        ];
     }

@@ -24,8 +24,6 @@ use App\Http\Resources\ProblemResource;
 use App\Models\Problem;
 use App\Models\Traffic;
 
-use function PHPUnit\Framework\isEmpty;
-
 class UserController extends Controller
 {
     public function registerNewMasterAdmin(Request $req){

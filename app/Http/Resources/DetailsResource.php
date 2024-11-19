@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SuggestResource extends JsonResource
+class DetailsResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,11 +16,7 @@ class SuggestResource extends JsonResource
     {
         return [
             'id'=>$this->id,
-            'text'=>$this->text,
-            'email'=>$this->email,
-            'fullName'=>$this->fullName,
-            'phone'=>$this->phone,
-            'address'=>$this->address
+            'text'=>$this->text
         ];
     }
 }

@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('suggests', function (Blueprint $table) {
             $table->id();
+            $table->string('email');
             $table->string('text');
+            $table->string('phone');
+            $table->string('fullName');
+            $table->string('address');
+            $table->foreignId("project_id")->nullable()->references('id')->on('projects')->onDelete('cascade');
+            $table->foreignId("organization_id")->nullable()->references('id')->on('organizations')->onDelete('cascade');
             $table->timestamps();
         });
     }

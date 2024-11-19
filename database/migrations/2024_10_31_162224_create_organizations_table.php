@@ -15,18 +15,11 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->integer("experience");
-            $table->string("details");
-            $table->string("skils");
             $table->string("logo")->default("no image");
             $table->string("view");
             $table->string("message");
-            $table->string("number");
-            $table->string("socials");
             $table->string("address");
             $table->string("phone");
-            $table->string("complaints");
-            $table->string("suggests");
-            // $table->unsignedBigInteger("user_id");
             $table->foreignId("user_id")->references('id')->on('users')->onDelete('cascade');
             
             

@@ -17,13 +17,11 @@ return new class extends Migration
             $table->string('name');
             $table->string('address');
             $table->string('logo')->default('no logo');
-            $table->string('summary');
             $table->date('start_At');
             $table->date('end_At');
+            $table->integer('rate')->default(0);
             $table->integer('benefitDir');
             $table->integer('benefitUnd');
-            $table->string('activities');
-            $table->string('rate')->default(0);
             $table->string('pdfURL')->default('no pdf');
             $table->string('videoURL')->default('no video');
             $table->foreignId('organization_id')->references('id')->on('organizations')->onDelete('cascade');

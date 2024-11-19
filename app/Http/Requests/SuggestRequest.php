@@ -22,7 +22,11 @@ class SuggestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'text'=> ['required', 'string', 'max:1000'],
+            'text'=> ['required', 'string', 'max:500'],
+            'email'=> ['required', 'string', 'max:500','regex:/^[a-zA-Z0-9]+@[a-zA-Z]+.[a-zA-Z]+$/'],
+            'fullName'=> ['required', 'string', 'max:500'],
+            'phone'=>['required', 'string', 'regex:/^[0-9]+$/'],
+            'address'=> ['required', 'string', 'max:500'],
         ];
     }
 }

@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Organization;
 use App\Models\Comment;
 use App\Models\Image;
+use App\Models\Summary;
+use App\Models\Activities;
+use App\Models\Suggest;
+use App\Models\Problem;
+use App\Models\Opinion;
 
 class Project extends Model
 {
@@ -13,13 +18,10 @@ class Project extends Model
         'name',
         'address',
         'logo',
-        'summary',
         'start_At',
         'end_At',
         'benefitDir',
         'benefitUnd',
-        'activities',
-        'rate',
         'pdfURL',
         'videoURL',
         'organization_id'
@@ -35,5 +37,25 @@ class Project extends Model
 
     public function images(){
         return $this->hasMany(Image::class);
+    }
+
+    public function summaries(){
+        return $this->hasMany(Summary::class);
+    }
+
+    public function activities(){
+        return $this->hasMany(Activities::class);
+    }
+
+    public function suggests(){
+        return $this->hasMany(Suggest::class);
+    }
+
+    public function problems(){
+        return $this->hasMany(Problem::class);
+    }
+
+    public function opinions(){
+        return $this->hasMany(Opinion::class);
     }
 }

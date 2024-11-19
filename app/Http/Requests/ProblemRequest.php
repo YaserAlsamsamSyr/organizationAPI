@@ -21,8 +21,20 @@ class ProblemRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'text'=> ['required', 'string', 'max:1000'],
+        $rules= [
+            'date'=> ['required', 'string', 'max:100'],
+            'number'=>['required', 'string', 'regex:/^[0-9]+$/'],
+            'fullName'=> ['required', 'string', 'max:200'],
+            'phone'=>['required', 'string', 'regex:/^[0-9]+$/'],
+            'email'=> ['required', 'string', 'max:500','regex:/^[a-zA-Z0-9]+@[a-zA-Z]+.[a-zA-Z]+$/'],
+            'address'=> ['required', 'string', 'max:300'],
+            'benifit'=> ['required', 'string', 'max:500'],
+            'problemDate'=> ['required', 'string', 'max:100'],
+            'isPrevious'=> ['required', 'string', 'max:500'],
         ];
+        foreach($this->request->get('typeProblems') as $key => $val){
+            $rules['typeProblems.type'] = ['nullable', 'string', 'max:400']; 
+        }
+        return $rules;
     }
 }

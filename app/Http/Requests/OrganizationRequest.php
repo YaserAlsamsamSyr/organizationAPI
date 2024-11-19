@@ -23,23 +23,34 @@ class OrganizationRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules =  [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['sometimes','required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['sometimes','required','confirmed', Rules\Password::defaults()],
             "experience"=>['required','regex:/^[0-9]{1,10}$/'],
-            "details"=>['required', 'string', 'max:800'],
-            "skils"=>['required', 'string', 'max:1000'],
             "logo"=>['nullable','image','mimes:jpeg,jpg,png,gif'],
             "view"=>['required', 'string', 'max:700'],
             "message"=>['required', 'string', 'max:800'],
-            "number"=>['required', 'string', 'max:15','regex:/^[0-9]+$/'],
-            "socials"=>['required', 'string', 'max:1000'],
             "address"=>['required', 'string', 'max:600'],
             "phone"=>['required', 'string', 'max:15','regex:/^[0-9]+$/'],
-            "complaints"=>['required', 'string', 'max:1000'],
-            "suggests"=>['required', 'string', 'max:1000'],
-            
         ];
+                 
+        foreach($this->request->get('details') as $key => $val)
+            $rules['details.'.$key] = ['nullable', 'string', 'max:800']; 
+         
+        foreach($this->request->get('skils') as $key => $val)
+            $rules['skils.'.$key] = ['nullable', 'string', 'max:800']; 
+    
+        foreach($this->request->get('numbers') as $key => $val){
+            $rules['numbers.type'] = ['nullable', 'string', 'max:400'];
+            $rules['numbers.number'] = ['nullable', 'string', 'regex:/^[0-9]+$/'];
+        } 
+
+        foreach($this->request->get('socials') as $key => $val){
+            $rules['socials.type'] = ['nullable', 'string', 'max:80'];
+            $rules['socials.url'] = ['nullable', 'string'];
+        } 
+     
+          return $rules;
     }
 }

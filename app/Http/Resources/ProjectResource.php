@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\CommentResource;
 use App\Http\Resources\ImageResource;
+use App\Http\Resources\SummaryResource;
+use App\Http\Resources\ActivitiesResource;
+use App\Http\Resources\ProblemResource;
+use App\Http\Resources\SuggestResource;
 
 class ProjectResource extends JsonResource
 {
@@ -22,17 +26,19 @@ class ProjectResource extends JsonResource
             'name'=>$this->name,
             'address'=>$this->address,
             'logo'=>$this->logo,
-            'summary'=>$this->summary,
+            'summary'=>SummaryResource::collection($this->summaries),
             'start_At'=>$this->start_At,
             'end_At'=>$this->end_At,
             'benefitDir'=>$this->benefitDir,
             'benefitUnd'=>$this->benefitUnd,
-            'activities'=>$this->activities,
+            'activities'=>ActivitiesResource::collection($this->activities),
             'rate'=>$this->rate,
             'pdfURL'=>$this->pdfURL,
             'videoURL'=>$this->videoURL,
             'images'=>ImageResource::collection($this->images),
             'comments'=>CommentResource::collection($this->comments),
+            'suggests'=>SuggestResource::collection($this->suggests),
+            'problems'=>ProblemResource::collection($this->problems),
         ];
     }
 }
