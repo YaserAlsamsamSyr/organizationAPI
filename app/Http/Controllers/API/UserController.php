@@ -54,6 +54,7 @@ class UserController extends Controller
           }
     }
     public function createOrg(OrganizationRequest $req){
+           return $req;
             try{
                 if(auth()->user()->role!=="admin")
                     return throw ValidationException::withMessages(['not authorized']);
