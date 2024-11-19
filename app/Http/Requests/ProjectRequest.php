@@ -32,15 +32,12 @@ class ProjectRequest extends FormRequest
             'rate'=>['nullable', 'string', 'max:15','regex:/^[0-9]+$/'],
             'pdfURL'=>['nullable',"mimes:pdf","max:100000"],
             'videoURL'=>['nullable', 'string', 'max:1000'],
+            "activities"=>["nullable",'array',"min:1"],
+            'activities.*.text' => ['nullable', 'string', 'max:1000'],
+            'activities.*.type' => ['nullable', 'string', 'max:1000'],
+            "summary"=>["nullable",'array',"min:1"],
+            'summary.*.text' => ['nullable', 'string', 'max:2000'] 
         ];
-        
-        foreach($this->request->get('activities') as $key => $val){
-            $rules['activities.text'] = ['nullable', 'string', 'max:1000'];
-            $rules['activities.type'] = ['nullable', 'string', 'max:1000']; 
-        }
-        foreach($this->request->get('summary') as $key => $val)
-            $rules['summary.text'] = ['required', 'string', 'max:2000']; 
-
         return $rules;
     }
 }

@@ -21,11 +21,13 @@ use Illuminate\Support\Facades\File;
 use App\Models\Suggest;
 use App\Http\Resources\SuggestResource;
 use App\Http\Resources\ProblemResource;
+use App\Models\Activities;
 use App\Models\Detail;
 use App\Models\Number;
 use App\Models\Problem;
 use App\Models\Skil;
 use App\Models\Social;
+use App\Models\Summary;
 use App\Models\Traffic;
 
 class UserController extends Controller
@@ -263,12 +265,10 @@ class UserController extends Controller
                 $pro->logo=asset('/images/projects/logo/'.$name);
             }
             //
-            $pro->summary=$req->summary;
             $pro->start_At=$req->start_At;
             $pro->end_At=$req->end_At;
             $pro->benefitDir=$req->benefitDir;
             $pro->benefitUnd=$req->benefitUnd;
-            $pro->activities=$req->activities;
             if($req->rate!==null)
                  $pro->rate=$req->rate;
             // upload one pdf
@@ -299,6 +299,19 @@ class UserController extends Controller
             //
             $user=auth()->user()->myOrganizations()->findOrfail($orgId);
             $pro=$user->organization->projects()->save($pro);
+            $data=[];
+            if($req->summaries){
+                foreach($req->summaries as $sam) 
+                   array_push($data,new Summary(['text'=>$sam['text']]));
+                $pro->summaries()->saveMany($data);
+                $data=[];
+            }
+            if($req->activities){
+                foreach($req->activities as $activities) 
+                   array_push($data,new Activities(['text'=>$activities['text'],'type'=>$activities['type']]));
+                $pro->activities()->saveMany($data);
+                $data=[];
+            }
             if(sizeof($imgs)!==0)
                 $pro->images()->saveMany($imgs);
             return response()->json(['message'=>'added success'],201);
@@ -317,13 +330,17 @@ class UserController extends Controller
             $user=auth()->user()->myOrganizations()->findOrfail($orgId);
             $pro=$user->organization->projects()->findOrFail($proId);
             //delete all image and pdf
-            $n=explode("/images/",$pro->logo)[1];
-            if(File::exists(public_path().'/images/'.$n)) {
-                File::delete(public_path().'/images/'.$n);
+            if($pro->logo){
+                $n=explode("/images/",$pro->logo)[1];
+                if(File::exists(public_path().'/images/'.$n)) {
+                    File::delete(public_path().'/images/'.$n);
+                }
             }
-            $n=explode("/images/",$pro->pdfURL)[1];
-            if(File::exists(public_path().'/images/'.$n)) {
-                File::delete(public_path().'/images/'.$n);
+            if($pro->pdfURL!=="no pdf"){
+                $n=explode("/images/",$pro->pdfURL)[1];
+                if(File::exists(public_path().'/images/'.$n)) {
+                    File::delete(public_path().'/images/'.$n);
+                }
             }
             $imggs=$pro->images;
             for($i=0;$i<sizeof($imggs);$i++){
@@ -366,12 +383,10 @@ class UserController extends Controller
                 $pro->logo=asset('/images/projects/logo/'.$name);
             }
             //
-            $pro->summary=$req->summary;
             $pro->start_At=$req->start_At;
             $pro->end_At=$req->end_At;
             $pro->benefitDir=$req->benefitDir;
             $pro->benefitUnd=$req->benefitUnd;
-            $pro->activities=$req->activities;
             if($req->rate!==null)
                  $pro->rate=$req->rate;
             // upload one pdf
@@ -407,6 +422,21 @@ class UserController extends Controller
             }
             //
             $pro->save();
+            $data=[];
+            if($req->summaries){
+                foreach($req->summaries as $sam) 
+                   array_push($data,new Summary(['text'=>$sam['text']]));
+                $pro->summaries()->delete();
+                $pro->summaries()->saveMany($data);
+                $data=[];
+            }
+            if($req->activities){
+                foreach($req->activities as $activities) 
+                   array_push($data,new Activities(['text'=>$activities['text'],'type'=>$activities['type']]));
+                $pro->activities()->delete();
+                $pro->activities()->saveMany($data);
+                $data=[];
+            }
             if(sizeof($imgs)!==0){
                 //delete old images
                 for($i=0;$i<sizeof($pro->images);$i++){
@@ -424,6 +454,7 @@ class UserController extends Controller
             return response()->json(['message'=>$err->getMessage(),422]);
         }
     }
+    //here I am
     public function getSuggests(){
         try{
              $sug=SuggestResource::collection(Suggest::all());
