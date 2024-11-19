@@ -164,8 +164,6 @@ class UserController extends Controller
                 $org->password=Hash::make($req->string($req->password));
             $org->save();
             $org->organization->experience=$req->experience;
-            $org->organization->details=$req->details;
-            $org->organization->skils=$req->skils;
             // upload one image
             if($req->hasfile('logo')) {  
                 $file=$req->file('logo');
@@ -198,13 +196,39 @@ class UserController extends Controller
             //
             $org->organization->view=$req->view;
             $org->organization->message=$req->message;
-            $org->organization->number=$req->number;
-            $org->organization->socials=$req->socials;
             $org->organization->address=$req->address;
             $org->organization->phone=$req->phone;
-            $org->organization->complaints=$req->complaints;
-            $org->organization->suggests=$req->suggests;
             $org->organization->save();
+            /////////////////////////////////////////////////////////////
+            $data=[];
+            if($req->details){
+                foreach($req->details as $det) 
+                   array_push($data,new Detail(['text'=>$det['text']]));
+                   $org->organization->details()->delete();
+                $org->organization->details()->saveMany($data);
+                $data=[];
+            }
+            if($req->skils){
+                foreach($req->skils as $skil) 
+                   array_push($data,new Skil(['text'=>$skil['text']]));  
+                   $org->organization->skils()->delete();      
+                $org->organization->skils()->saveMany($data);
+                $data=[];
+            }
+            if($req->number){
+                foreach($req->number as $number) 
+                   array_push($data,new Number(['type'=>$number['type'],'number'=>$number['number']]));
+                   $org->organization->numbers()->delete();
+                $org->organization->numbers()->saveMany($data);    
+                $data=[];
+            }
+            if($req->socials){
+                foreach($req->socials as $socials) 
+                   array_push($data,new Social(['type'=>$socials['type'],'url'=>$socials['url']]));
+                   $org->organization->socials()->delete();
+                $org->organization->socials()->saveMany($data);    
+            }
+            /////////////////////////////////////////////////////////////
             if(sizeof($imgs)!==0){
                 //delete old images
                 for($i=0;$i<sizeof($org->organization->images);$i++){
