@@ -20,7 +20,9 @@ class SuggestResource extends JsonResource
             'email'=>$this->email,
             'fullName'=>$this->fullName,
             'phone'=>$this->phone,
-            'address'=>$this->address
+            'address'=>$this->address,
+            'project_name'=>$this->project->name ?? '',
+            'organization_name'=>$this->organization->owner->name ?? ''
         ];
     }
 }

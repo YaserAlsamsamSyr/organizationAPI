@@ -10,7 +10,8 @@ class Summary extends Model
     //
     protected $fillable=[
         'text',
-        'project_id'
+        'project_id',
+        'type'
     ];
     
     public function project(){

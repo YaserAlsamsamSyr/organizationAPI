@@ -20,7 +20,7 @@ class UserResource extends JsonResource
             'id'=>$this->id,
             'name'=>$this->name,
             'email'=>$this->email,
-            'myOrganizations'=>OrganizationResource::collection($this->myOrganizations)
+            'myOrganizations'=>OrganizationResource::collection($this->myOrganizations()->limit(20)->get())
         ];
     }
 }

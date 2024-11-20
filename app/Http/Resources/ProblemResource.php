@@ -25,7 +25,9 @@ class ProblemResource extends JsonResource
             'benifit'=>$this->benifit,
             'problemDate'=>$this->problemDate,
             'isPrevious'=>$this->isPrevious,
-            'typeProblem'=>TypeProblemResource::collection($this->typeProblems)
+            'typeProblem'=>TypeProblemResource::collection($this->typeProblems),
+            'project_name'=>$this->project->name??'',
+            'organization_name'=>$this->organization->owner->name??''
         ];
     }
 }

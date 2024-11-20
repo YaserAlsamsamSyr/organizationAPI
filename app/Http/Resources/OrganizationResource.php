@@ -38,7 +38,6 @@ class OrganizationResource extends JsonResource
         "socials"=>SocialsResource::collection($this->organization->socials),
         "address"=>$this->organization->address,
         "phone"=>$this->organization->phone,
-        "suggests"=>SuggestResource::collection($this->organization->suggests),
         "projects"=>ProjectResource::collection($this->organization->projects)
        ];
     }

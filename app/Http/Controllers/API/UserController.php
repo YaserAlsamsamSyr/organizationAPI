@@ -14,6 +14,8 @@ use App\Http\Requests\OrganizationRequest;
 use Illuminate\Validation\ValidationException;
 use App\Http\Requests\ProjectRequest;
 use App\Http\Requests\TrafficRequest;
+use App\Http\Resources\OpinionResource;
+use App\Http\Resources\OrganizationResource;
 use App\Models\Image;
 use App\Models\Project;
 use Illuminate\Support\Facades\Validator;
@@ -21,6 +23,7 @@ use Illuminate\Support\Facades\File;
 use App\Models\Suggest;
 use App\Http\Resources\SuggestResource;
 use App\Http\Resources\ProblemResource;
+use App\Http\Resources\ProjectResource;
 use App\Models\Activities;
 use App\Models\Detail;
 use App\Models\Number;
@@ -206,28 +209,28 @@ class UserController extends Controller
             if($req->details){
                 foreach($req->details as $det) 
                    array_push($data,new Detail(['text'=>$det['text']]));
-                   $org->organization->details()->delete();
+                $org->organization->details()->delete();
                 $org->organization->details()->saveMany($data);
                 $data=[];
             }
             if($req->skils){
                 foreach($req->skils as $skil) 
                    array_push($data,new Skil(['text'=>$skil['text']]));  
-                   $org->organization->skils()->delete();      
+                $org->organization->skils()->delete();      
                 $org->organization->skils()->saveMany($data);
                 $data=[];
             }
             if($req->number){
                 foreach($req->number as $number) 
                    array_push($data,new Number(['type'=>$number['type'],'number'=>$number['number']]));
-                   $org->organization->numbers()->delete();
+                $org->organization->numbers()->delete();
                 $org->organization->numbers()->saveMany($data);    
                 $data=[];
             }
             if($req->socials){
                 foreach($req->socials as $socials) 
                    array_push($data,new Social(['type'=>$socials['type'],'url'=>$socials['url']]));
-                   $org->organization->socials()->delete();
+                $org->organization->socials()->delete();
                 $org->organization->socials()->saveMany($data);    
             }
             /////////////////////////////////////////////////////////////
@@ -302,7 +305,7 @@ class UserController extends Controller
             $data=[];
             if($req->summaries){
                 foreach($req->summaries as $sam) 
-                   array_push($data,new Summary(['text'=>$sam['text']]));
+                   array_push($data,new Summary(['text'=>$sam['text'],'type'=>$sam['type']]));
                 $pro->summaries()->saveMany($data);
                 $data=[];
             }
@@ -425,7 +428,7 @@ class UserController extends Controller
             $data=[];
             if($req->summaries){
                 foreach($req->summaries as $sam) 
-                   array_push($data,new Summary(['text'=>$sam['text']]));
+                   array_push($data,new Summary(['text'=>$sam['text'],'type'=>$sam['type']]));
                 $pro->summaries()->delete();
                 $pro->summaries()->saveMany($data);
                 $data=[];
@@ -454,10 +457,13 @@ class UserController extends Controller
             return response()->json(['message'=>$err->getMessage(),422]);
         }
     }
-    //here I am
-    public function getSuggests(){
+    //
+    public function getSuggests(Request $req){
         try{
-             $sug=SuggestResource::collection(Suggest::all());
+             if(auth()->user()->role!="admin")
+                return response()->json(['message'=>"not authorized"]);
+            $numItems=$req->per_page??10;
+             $sug=SuggestResource::collection(Suggest::paginate($numItems));
              return response()->json($sug,200);
         }catch(Exception $err){
             return response()->json(['messsage'=>$err->getMessage(),422]);
@@ -465,21 +471,26 @@ class UserController extends Controller
     }
     public function deleteSuggest(string $sugId){
         try{            
+            if(auth()->user()->role!="admin")
+               return response()->json(['message'=>"not authorized"]);
             if(!preg_match("/^[0-9]+$/", $sugId))
                return throw ValidationException::withMessages(['validation err']);
             $sug=Suggest::find($sugId);
+            if($sug)
             return $sug->delete() ?
                    response()->json(['message'=>'delete success'],200) :
                    response()->json(['message'=>'delete fail'],422);
+            return response()->json(['message'=>'this suggest not found'],404);
         } catch(Exception $err){
             return response()->json(['messsage'=>$err->getMessage(),422]);
         }   
     }
-    public function getProblems(){
+    public function getProblems(Request $req){
         try{
             if(auth()->user()->role!="admin")
                return response()->json(['message'=>"not authorized"]);
-             $pro=ProblemResource::collection(Problem::all());
+            $numItems=$req->per_page??10;
+            $pro=ProblemResource::collection(Problem::paginate($numItems));
              return response()->json($pro,200);
         }catch(Exception $err){
             return response()->json(['messsage'=>$err->getMessage(),422]);
@@ -492,9 +503,11 @@ class UserController extends Controller
             if(!preg_match("/^[0-9]+$/", $proId))
                return throw ValidationException::withMessages(['validation err']);
             $pro=Problem::find($proId);
-            return $pro->delete() ?
+            if($proId)
+                return $pro->delete() ?
                    response()->json(['message'=>'delete success'],200) :
                    response()->json(['message'=>'delete fail'],422);
+            return response()->json(['message'=>'this problem not found'],404);
         } catch(Exception $err){
             return response()->json(['messsage'=>$err->getMessage(),422]);
         }   
@@ -529,6 +542,39 @@ class UserController extends Controller
                 return response()->json(['message'=>$err->getMessage()],422);
         }
     }
+    public function getOpinions(Request $req,String $projectId){
+        try{  
+            if(auth()->user()->role!="admin")
+               return response()->json('not authorized',422);
+            $pro=Project::find($projectId);
+            if($pro){
+                $numItems=$req->per_page??10;
+                return response()->json(['opinions'=>OpinionResource::collection($pro->opinions()->paginate($numItems))],201);
+            }
+            return response()->json(['message'=>'this project not found'],404);
+        } catch(Exception $err){
+                return response()->json(['message'=>$err->getMessage()],422);
+        }
+    }
+    public function deleteOpinion(String $projectId,String $opinionId){
+        try{
+            if(auth()->user()->role!="admin")
+               return response()->json('not authorized',422);
+            $pro=Project::find($projectId);
+            if($pro){
+                $op=$pro->opinions()->where('id',$opinionId)->get();
+                if(sizeof($op)!==0)
+                    if($op[0]->delete())
+                        return response()->json(['message'=>'delete success'],200);
+                    else
+                        return response()->json(['message'=>'delete fail'],422);
+                return response()->json(['message'=>'this opinion not found'],422);
+            }
+            return response()->json(['message'=>'this project not found'],422);
+        }catch(Exception $err){
+            return response()->json(['message'=>$err->getMessage()],422);
+        }
+    }
     public function addCustomerToTraffic(TrafficRequest  $req){
                try{
                 if(auth()->user()->role!="admin")
@@ -549,6 +595,28 @@ class UserController extends Controller
                } catch(Exception $err){
                    return response()->json(['message'=>$err->getMessage(),422]);
                }
+    }
+    public function getProjects(Request $req){
+        try{  
+            if(auth()->user()->role!="admin")
+               return response()->json('not authorized',422);
+            $numItems=$req->per_page??10;
+            $pros=Project::paginate($numItems);
+            return response()->json(['projects'=>ProjectResource::collection($pros)],200);
+        } catch(Exception $err){
+                return response()->json(['message'=>$err->getMessage()],422);
+        } 
+    }
+    public function getOrganizations(Request $req){
+        try{  
+            if(auth()->user()->role!="admin")
+               return response()->json('not authorized',422);
+            $numItems=$req->per_page??10;
+            $ors=auth()->user()->myOrganizations()->paginate($numItems);
+            return response()->json(['organizations'=>OrganizationResource::collection($ors)],200);
+        } catch(Exception $err){
+                return response()->json(['message'=>$err->getMessage()],422);
+        } 
     }
     public function getTraffic(){
         try{

@@ -36,7 +36,8 @@ class ProjectRequest extends FormRequest
             'activities.*.text' => ['nullable', 'string', 'max:1000'],
             'activities.*.type' => ['nullable', 'string', 'max:1000'],
             "summary"=>["nullable",'array',"min:1"],
-            'summary.*.text' => ['nullable', 'string', 'max:2000'] 
+            'summary.*.text' => ['nullable', 'string', 'max:2000'],
+            'summary.*.type' => ['nullable', 'string', 'max:400'] 
         ];
         return $rules;
     }

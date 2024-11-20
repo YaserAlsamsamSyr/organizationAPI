@@ -16,7 +16,8 @@ class SummaryResource extends JsonResource
     {
         return [
             'id'=>$this->id,
-            'text'=>$this->text
+            'text'=>$this->text,
+            'type'=>$this->type
         ];
     }
 }

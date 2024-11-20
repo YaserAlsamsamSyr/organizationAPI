@@ -19,6 +19,8 @@ Route::middleware('allow')->prefix('masterAdmin')->group(function(){
         Route::delete('/deletePro/{orgId}/{proId}',[UserController::class,'deletePro']);
         Route::post('/createPro/{orgId}',[UserController::class,'createPro']);
         Route::post('/updatePro/{orgId}/{proId}',[UserController::class,'updatePro']);
+        Route::get('/getProjects',[UserController::class,'getProjects']);
+        Route::get('/getOrganizations',[UserController::class,'getOrganizations']);
         //
         Route::get('/getSuggests',[UserController::class,'getSuggests']);
         Route::delete('/deleteSuggest/{sugId}',[UserController::class,'deleteSuggest']);
@@ -30,6 +32,9 @@ Route::middleware('allow')->prefix('masterAdmin')->group(function(){
         //traffic
         Route::get('/getTraffic',[UserController::class,'getTraffic']);
         Route::post('/addCustomerToTraffic',[UserController::class,'addCustomerToTraffic']);
+        //opinion
+        Route::get('/getOpinions/{projectId}',[UserController::class,'getOpinions']);
+        Route::delete('/deleteOpinion/{projectId}/{opinionId}',[UserController::class,'deleteOpinion']);
     });
 });
 // organization
@@ -41,9 +46,6 @@ Route::middleware('allow')->prefix('organization')->group(function(){
         Route::delete('/deletePro/{proId}',[OrganizationController::class,'deletePro']);
         Route::post('/createPro',[OrganizationController::class,'createPro']);
         Route::post('/updatePro/{proId}',[OrganizationController::class,'updatePro']);
-        //
-        Route::get('/getSuggests',[UserController::class,'getSuggests']);
-        Route::delete('/deleteSuggest/{sugId}',[UserController::class,'deleteSuggest']);
         // profile
         Route::post('/updateMyProfile',[OrganizationController::class,'updateMyProfile']);
    });
