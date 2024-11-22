@@ -22,6 +22,7 @@ class ProjectResource extends JsonResource
     {
         // return parent::toArray($request);
         return [
+            'orgId'=>$this->owner->owner->id,
             'id'=>$this->id,
             'name'=>$this->name,
             'address'=>$this->address,

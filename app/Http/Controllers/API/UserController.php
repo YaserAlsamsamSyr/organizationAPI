@@ -597,7 +597,7 @@ class UserController extends Controller
             if(!$pro)
                 return response()->json(['message'=>'this project not found'],404);
             $pro=new ProjectResource($pro);
-            return response()->json(['orgId'=>$org->id,'project'=>$pro],200);
+            return response()->json(['project'=>$pro],200);
         } catch(Exception $err){
                 return response()->json(['message'=>$err->getMessage()],422);
         }
