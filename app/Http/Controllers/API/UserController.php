@@ -586,6 +586,34 @@ class UserController extends Controller
                 return response()->json(['message'=>$err->getMessage()],422);
         } 
     }
+    public function getProject(String $orgId,String $proId){
+        try{
+            if(auth()->user()->role!="admin")
+               return response()->json('not authorized',422);
+            $org=auth()->user()->myOrganizations()->find($orgId);
+            if(!$org)
+                return response()->json(['message'=>'this organization not found'],404);
+            $pro=$org->organization->projects()->find($proId);
+            if(!$pro)
+                return response()->json(['message'=>'this project not found'],404);
+            $pro=new ProjectResource($pro);
+            return response()->json(['orgId'=>$org->id,'project'=>$pro],200);
+        } catch(Exception $err){
+                return response()->json(['message'=>$err->getMessage()],422);
+        }
+    }
+    public function getOrganization(String $orgId){
+        try{  
+            if(auth()->user()->role!="admin")
+               return response()->json('not authorized',422);
+            $org=auth()->user()->myOrganizations()->find($orgId);
+            if(!$org)
+                return response()->json(['message'=>'this organization not found'],404);
+            return response()->json(['organization'=>new OrganizationResource($org)],200);
+        } catch(Exception $err){
+                return response()->json(['message'=>$err->getMessage()],422);
+        }
+    }
     public function getOrganizations(Request $req){
         try{  
             if(auth()->user()->role!="admin")

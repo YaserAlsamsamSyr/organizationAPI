@@ -11,7 +11,6 @@ Route::middleware('allow')->prefix('masterAdmin')->group(function(){
      Route::post('/register',[UserController::class,'registerNewMasterAdmin'])->middleware('guest:sanctum');
      Route::get('/logout',[AuthController::class,'logout'])->middleware('auth:sanctum');
      Route::middleware(['auth:sanctum','abilities:admin'])->group(function(){
-        Route::get('/getAllOrganizations',[UserController::class,'getAllOrganizations']);
         Route::post('/addOrg',[UserController::class,'createOrg']);
         Route::delete('/deleteOrg/{id}',[UserController::class,'deleteOrg']);
         Route::post('/updateOrg/{id}',[UserController::class,'updateOrg']);
@@ -19,8 +18,11 @@ Route::middleware('allow')->prefix('masterAdmin')->group(function(){
         Route::delete('/deletePro/{orgId}/{proId}',[UserController::class,'deletePro']);
         Route::post('/createPro/{orgId}',[UserController::class,'createPro']);
         Route::post('/updatePro/{orgId}/{proId}',[UserController::class,'updatePro']);
+        // get all and specific project , organization
         Route::get('/getProjects',[UserController::class,'getProjects']);
         Route::get('/getOrganizations',[UserController::class,'getOrganizations']);
+        Route::get('/getProject/{orgId}/{proId}',[UserController::class,'getProject']);
+        Route::get('/getOrganization/{orgId}',[UserController::class,'getOrganization']);
         //
         Route::get('/getSuggests',[UserController::class,'getSuggests']);
         Route::delete('/deleteSuggest/{sugId}',[UserController::class,'deleteSuggest']);
