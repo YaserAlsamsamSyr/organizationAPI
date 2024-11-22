@@ -137,18 +137,23 @@ class UserController extends Controller
             if(!preg_match("/^[0-9]+$/", $id))
                 return throw ValidationException::withMessages(['validation err']);
             $user=auth()->user()->myOrganizations()->findOrFail($id);
+            if(!$user)
+                return response()->json(["message"=>"this organization not found"],404);
             //delete all image and pdf
-            $n=explode("/images/",$user->organization->logo)[1];
-            if(File::exists(public_path().'/images/'.$n)) {
-                File::delete(public_path().'/images/'.$n);
-            }
-            $imggs=$user->organization->images;
-            for($i=0;$i<sizeof($imggs);$i++){
-                $n=explode("/images/",$imggs[$i]->url)[1];
+            if($user->organization->logo!="no image"){
+                $n=explode("/images/",$user->organization->logo)[1];
                 if(File::exists(public_path().'/images/'.$n)) {
                     File::delete(public_path().'/images/'.$n);
                 }
             }
+            $imggs=$user->organization->images;
+            if(sizeof($imggs)!=0)
+                for($i=0;$i<sizeof($imggs);$i++){
+                    $n=explode("/images/",$imggs[$i]->url)[1];
+                    if(File::exists(public_path().'/images/'.$n)) {
+                        File::delete(public_path().'/images/'.$n);
+                    }
+                }
             //
             if(!$user->delete())
                 return throw ValidationException::withMessages(['delete err']);
