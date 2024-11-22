@@ -24,7 +24,8 @@ class Project extends Model
         'benefitUnd',
         'pdfURL',
         'videoURL',
-        'organization_id'
+        'organization_id',
+        'allWhoRate'
     ];
 
     public function owner(){

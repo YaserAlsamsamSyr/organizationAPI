@@ -30,14 +30,16 @@ class ProjectRequest extends FormRequest
             'benefitDir'=>['required', 'string', 'max:15','regex:/^[0-9]+$/'],
             'benefitUnd'=>['required', 'string', 'max:15','regex:/^[0-9]+$/'],
             'rate'=>['nullable', 'string', 'max:15','regex:/^[0-9]+$/'],
-            'pdfURL'=>['nullable',"mimes:pdf","max:100000"],
+            'pdfURL'=>['nullable',"mimes:pdf"],
             'videoURL'=>['nullable', 'string', 'max:1000'],
             "activities"=>["nullable",'array',"min:1"],
-            'activities.*.text' => ['nullable', 'string', 'max:1000'],
-            'activities.*.type' => ['nullable', 'string', 'max:1000'],
-            "summary"=>["nullable",'array',"min:1"],
-            'summary.*.text' => ['nullable', 'string', 'max:2000'],
-            'summary.*.type' => ['nullable', 'string', 'max:400'] 
+            'activities.*.text' => ['nullable', 'string'],
+            'activities.*.type' => ['nullable', 'string', 'max:10000'],
+            "summaries"=>["nullable",'array',"min:1"],
+            'summaries.*.text' => ['nullable', 'string'],
+            'summaries.*.type' => ['nullable', 'string', 'max:10000'] ,
+            "images"=>["nullable",'array',"min:1"],
+            "images.*"=>['nullable','image','mimes:jpeg,jpg,png,gif'],
         ];
         return $rules;
     }

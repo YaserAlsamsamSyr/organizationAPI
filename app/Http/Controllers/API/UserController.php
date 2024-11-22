@@ -80,18 +80,11 @@ class UserController extends Controller
                 // upload multi image
                 $imgs=[];
                 if($req->hasfile('images')) {
-                    $validator=Validator::make($req->all(), [
-                        "images"    => ["required",'array',"min:1"],
-                        "images.*"  => ['required','image','mimes:jpeg,jpg,png,gif'],
-                    ]);
-                    if ($validator->fails())
-                        return throw ValidationException::withMessages([$validator->messages()->first()]);
                    foreach($req->file('images') as $file) {
                        $name = uniqid().'.'.$file->getClientOriginalExtension();
                        $file->move(public_path('/images/organizations/imgs'),$name);
                        array_push($imgs,new Image(['url'=>asset('/images/organizations/imgs/'.$name)]));
                    }
-    
                 }
                 //
                 $org->view=$req->view;
@@ -156,7 +149,7 @@ class UserController extends Controller
                 }
             //
             if(!$user->delete())
-                return throw ValidationException::withMessages(['delete err']);
+                return response()->json(["message"=>"delete fail"],422);
             return response()->json(["message"=>"delete success"],200);
         } catch(Exception $err){
             return response()->json(['message'=>$err->getMessage()],422);
@@ -191,12 +184,6 @@ class UserController extends Controller
             // upload multi image
             $imgs=[];
             if($req->hasfile('images')) {
-                $validator=Validator::make($req->all(), [
-                    "images"    => ["required",'array',"min:1"],
-                    "images.*"  => ['required','image','mimes:jpeg,jpg,png,gif'],
-                ]);
-                if ($validator->fails())
-                    return throw ValidationException::withMessages([$validator->messages()->first()]);
                foreach($req->file('images') as $file) {
                    $name = uniqid().'.'.$file->getClientOriginalExtension();
                    $file->move(public_path('/images/organizations/imgs'),$name);
@@ -292,12 +279,6 @@ class UserController extends Controller
             // upload multi image
             $imgs=[];
             if($req->hasfile('images')) {
-                $validator=Validator::make($req->all(), [
-                    "images"    => ["required",'array',"min:1"],
-                    "images.*"  => ['required','image','mimes:jpeg,jpg,png,gif'],
-                ]);
-                if ($validator->fails())
-                    return throw ValidationException::withMessages([$validator->messages()->first()]);
                foreach($req->file('images') as $file) {
                    $name = uniqid().'.'.$file->getClientOriginalExtension();
                    $file->move(public_path('/images/projects/imgs'),$name);
@@ -307,18 +288,17 @@ class UserController extends Controller
             //
             $user=auth()->user()->myOrganizations()->findOrfail($orgId);
             $pro=$user->organization->projects()->save($pro);
-            $data=[];
+            $summaries=[];
             if($req->summaries){
                 foreach($req->summaries as $sam) 
-                   array_push($data,new Summary(['text'=>$sam['text'],'type'=>$sam['type']]));
-                $pro->summaries()->saveMany($data);
-                $data=[];
+                   array_push($summaries,new Summary(['text'=>$sam['text'],'type'=>$sam['type']]));
+                $pro->summaries()->saveMany($summaries);
             }
+            $activities=[];
             if($req->activities){
                 foreach($req->activities as $activities) 
-                   array_push($data,new Activities(['text'=>$activities['text'],'type'=>$activities['type']]));
-                $pro->activities()->saveMany($data);
-                $data=[];
+                   array_push($activities,new Activities(['text'=>$activities['text'],'type'=>$activities['type']]));
+                $pro->activities()->saveMany($activities);
             }
             if(sizeof($imgs)!==0)
                 $pro->images()->saveMany($imgs);
@@ -337,8 +317,10 @@ class UserController extends Controller
                 return throw ValidationException::withMessages(['validation err']);
             $user=auth()->user()->myOrganizations()->findOrfail($orgId);
             $pro=$user->organization->projects()->findOrFail($proId);
+            if(!$pro)  
+                return response()->json(["message"=>"this project not found"],404);
             //delete all image and pdf
-            if($pro->logo){
+            if($pro->logo!=="no logo"){
                 $n=explode("/images/",$pro->logo)[1];
                 if(File::exists(public_path().'/images/'.$n)) {
                     File::delete(public_path().'/images/'.$n);
@@ -359,7 +341,7 @@ class UserController extends Controller
             }
             //
             if(!$pro->delete())
-                return throw ValidationException::withMessages(['delete err']);
+                return response()->json(["message"=>"delete fail"],422);
             return response()->json(["message"=>"delete success"],200);
         } catch(Exception $err){
             return response()->json(['message'=>$err->getMessage()],422);
@@ -416,12 +398,6 @@ class UserController extends Controller
             // upload multi image
             $imgs=[];
             if($req->hasfile('images')) {
-                $validator=Validator::make($req->all(), [
-                    "images"    => ["required",'array',"min:1"],
-                    "images.*"  => ['required','image','mimes:jpeg,jpg,png,gif'],
-                ]);
-                if ($validator->fails())
-                    return throw ValidationException::withMessages([$validator->messages()->first()]);
                foreach($req->file('images') as $file) {
                    $name = uniqid().'.'.$file->getClientOriginalExtension();
                    $file->move(public_path('/images/projects/imgs'),$name);
@@ -430,20 +406,19 @@ class UserController extends Controller
             }
             //
             $pro->save();
-            $data=[];
+            $summaries=[];
             if($req->summaries){
                 foreach($req->summaries as $sam) 
-                   array_push($data,new Summary(['text'=>$sam['text'],'type'=>$sam['type']]));
+                   array_push($summaries,new Summary(['text'=>$sam['text'],'type'=>$sam['type']]));
                 $pro->summaries()->delete();
-                $pro->summaries()->saveMany($data);
-                $data=[];
+                $pro->summaries()->saveMany($summaries);
             }
+            $activities=[];
             if($req->activities){
                 foreach($req->activities as $activities) 
-                   array_push($data,new Activities(['text'=>$activities['text'],'type'=>$activities['type']]));
+                   array_push($activities,new Activities(['text'=>$activities['text'],'type'=>$activities['type']]));
                 $pro->activities()->delete();
-                $pro->activities()->saveMany($data);
-                $data=[];
+                $pro->activities()->saveMany($activities);
             }
             if(sizeof($imgs)!==0){
                 //delete old images
@@ -462,7 +437,6 @@ class UserController extends Controller
             return response()->json(['message'=>$err->getMessage(),422]);
         }
     }
-    //
     public function getSuggests(Request $req){
         try{
              if(auth()->user()->role!="admin")
