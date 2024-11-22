@@ -9,9 +9,16 @@ use App\Http\Requests\ProjectRequest;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Image;
 use App\Models\Project;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
 use App\Http\Requests\OrganizationRequest;
+use App\Http\Resources\ProjectResource;
+use App\Models\Activities;
+use App\Models\Detail;
+use App\Models\Number;
+use App\Models\Skil;
+use App\Models\Social;
+use App\Models\Summary;
+use Illuminate\Http\Request;
 
 class OrganizationController extends Controller
 {
@@ -30,14 +37,10 @@ class OrganizationController extends Controller
                 $pro->logo=asset('/images/projects/logo/'.$name);
             }
             //
-            $pro->summary=$req->summary;
             $pro->start_At=$req->start_At;
             $pro->end_At=$req->end_At;
             $pro->benefitDir=$req->benefitDir;
             $pro->benefitUnd=$req->benefitUnd;
-            $pro->activities=$req->activities;
-            if($req->rate!==null)
-                 $pro->rate=$req->rate;
             // upload one pdf
             if($req->hasfile('pdfURL')) {  
                 $file=$req->file('pdfURL');
@@ -51,12 +54,6 @@ class OrganizationController extends Controller
             // upload multi image
             $imgs=[];
             if($req->hasfile('images')) {
-                $validator=Validator::make($req->all(), [
-                    "images"    => ["required",'array',"min:1"],
-                    "images.*"  => ['required','image','mimes:jpeg,jpg,png,gif'],
-                ]);
-                if ($validator->fails())
-                    return throw ValidationException::withMessages([$validator->messages()->first()]);
                foreach($req->file('images') as $file) {
                    $name = uniqid().'.'.$file->getClientOriginalExtension();
                    $file->move(public_path('/images/projects/imgs'),$name);
@@ -65,6 +62,18 @@ class OrganizationController extends Controller
             }
             //
             $pro=auth()->user()->organization->projects()->save($pro);
+            $summaries=[];
+            if($req->summaries){
+                foreach($req->summaries as $sam) 
+                   array_push($summaries,new Summary(['text'=>$sam['text'],'type'=>$sam['type']]));
+                $pro->summaries()->saveMany($summaries);
+            }
+            $activities=[];
+            if($req->activities){
+                foreach($req->activities as $activities) 
+                   array_push($activities,new Activities(['text'=>$activities['text'],'type'=>$activities['type']]));
+                $pro->activities()->saveMany($activities);
+            }
             if(sizeof($imgs)!==0)
                 $pro->images()->saveMany($imgs);
             return response()->json(['message'=>'added success'],201);
@@ -78,15 +87,19 @@ class OrganizationController extends Controller
                 return throw ValidationException::withMessages(['not authorized']);
             if(!preg_match("/^[0-9]+$/", $proId))
                 return throw ValidationException::withMessages(['validation err']);
-            $pro=auth()->user()->organization->projects()->findOrFail($proId);
+            $pro=auth()->user()->organization->projects()->find($proId);
+            if(!$pro)
+                 return response()->json(['message'=>'this project not found'],404);
             //delete all image and pdf
-            $n=explode("/images/",$pro->logo)[1];
-            if(File::exists(public_path().'/images/'.$n)) {
-                File::delete(public_path().'/images/'.$n);
-            }
-            $n=explode("/images/",$pro->pdfURL)[1];
-            if(File::exists(public_path().'/images/'.$n)) {
-                File::delete(public_path().'/images/'.$n);
+            if($pro->logo!="no logo"){
+                $n=explode("/images/",$pro->logo)[1];
+                if(File::exists(public_path().'/images/'.$n)) {
+                    File::delete(public_path().'/images/'.$n);
+                }
+                $n=explode("/images/",$pro->pdfURL)[1];
+                if(File::exists(public_path().'/images/'.$n)) {
+                    File::delete(public_path().'/images/'.$n);
+                }
             }
             $imggs=$pro->images;
             for($i=0;$i<sizeof($imggs);$i++){
@@ -97,7 +110,7 @@ class OrganizationController extends Controller
             }
             //
             if(!$pro->delete())
-                return throw ValidationException::withMessages(['delete err']);
+                return throw ValidationException::withMessages(['delete error']);
             return response()->json(["message"=>"delete success"],200);
         } catch(Exception $err){
             return response()->json(['message'=>$err->getMessage()],422);
@@ -109,7 +122,9 @@ class OrganizationController extends Controller
                return response()->json(['message'=>"not authorized"]);
             if(!preg_match("/^[0-9]+$/", $proId))
                return throw ValidationException::withMessages(['validation err']);
-            $pro=auth()->user()->organization->projects()->findOrFail($proId);
+            $pro=auth()->user()->organization->projects()->find($proId);
+            if(!$pro)
+                return response()->json(['message'=>'this project not found'],404);
             $pro->name=$req->name;
             $pro->address=$req->address;
             // upload one image
@@ -126,12 +141,10 @@ class OrganizationController extends Controller
                 $pro->logo=asset('/images/projects/logo/'.$name);
             }
             //
-            $pro->summary=$req->summary;
             $pro->start_At=$req->start_At;
             $pro->end_At=$req->end_At;
             $pro->benefitDir=$req->benefitDir;
             $pro->benefitUnd=$req->benefitUnd;
-            $pro->activities=$req->activities;
             if($req->rate!==null)
                  $pro->rate=$req->rate;
             // upload one pdf
@@ -153,12 +166,6 @@ class OrganizationController extends Controller
             // upload multi image
             $imgs=[];
             if($req->hasfile('images')) {
-                $validator=Validator::make($req->all(), [
-                    "images"    => ["required",'array',"min:1"],
-                    "images.*"  => ['required','image','mimes:jpeg,jpg,png,gif'],
-                ]);
-                if ($validator->fails())
-                    return throw ValidationException::withMessages([$validator->messages()->first()]);
                foreach($req->file('images') as $file) {
                    $name = uniqid().'.'.$file->getClientOriginalExtension();
                    $file->move(public_path('/images/projects/imgs'),$name);
@@ -167,6 +174,20 @@ class OrganizationController extends Controller
             }
             //
             $pro->save();
+            $summaries=[];
+            if($req->summaries){
+                foreach($req->summaries as $sam) 
+                   array_push($summaries,new Summary(['text'=>$sam['text'],'type'=>$sam['type']]));
+                $pro->summaries()->delete();
+                $pro->summaries()->saveMany($summaries);
+            }
+            $activities=[];
+            if($req->activities){
+                foreach($req->activities as $activities) 
+                   array_push($activities,new Activities(['text'=>$activities['text'],'type'=>$activities['type']]));
+                $pro->activities()->delete();
+                $pro->activities()->saveMany($activities);
+            }
             if(sizeof($imgs)!==0){
                 //delete old images
                 for($i=0;$i<sizeof($pro->images);$i++){
@@ -194,8 +215,6 @@ class OrganizationController extends Controller
                 $org->password=Hash::make($req->string('password'));
             $org->save();
             $org->organization->experience=$req->experience;
-            $org->organization->details=$req->details;
-            $org->organization->skils=$req->skils;
             // upload one image
             if($req->hasfile('logo')) {  
                 $file=$req->file('logo');
@@ -213,12 +232,6 @@ class OrganizationController extends Controller
             // upload multi image
             $imgs=[];
             if($req->hasfile('images')) {
-                $validator=Validator::make($req->all(), [
-                    "images"    => ["required",'array',"min:1"],
-                    "images.*"  => ['required','image','mimes:jpeg,jpg,png,gif'],
-                ]);
-                if ($validator->fails())
-                    return throw ValidationException::withMessages([$validator->messages()->first()]);
                foreach($req->file('images') as $file) {
                    $name = uniqid().'.'.$file->getClientOriginalExtension();
                    $file->move(public_path('/images/organizations/imgs'),$name);
@@ -228,13 +241,39 @@ class OrganizationController extends Controller
             //
             $org->organization->view=$req->view;
             $org->organization->message=$req->message;
-            $org->organization->number=$req->number;
-            $org->organization->socials=$req->socials;
             $org->organization->address=$req->address;
             $org->organization->phone=$req->phone;
-            $org->organization->complaints=$req->complaints;
-            $org->organization->suggests=$req->suggests;
             $org->organization->save();
+            ////////////////
+            $data=[];
+            if($req->details){
+                foreach($req->details as $det) 
+                   array_push($data,new Detail(['text'=>$det['text']]));
+                $org->organization->details()->delete();
+                $org->organization->details()->saveMany($data);
+                $data=[];
+            }
+            if($req->skils){
+                foreach($req->skils as $skil) 
+                   array_push($data,new Skil(['text'=>$skil['text']]));  
+                $org->organization->skils()->delete();      
+                $org->organization->skils()->saveMany($data);
+                $data=[];
+            }
+            if($req->number){
+                foreach($req->number as $number) 
+                   array_push($data,new Number(['type'=>$number['type'],'number'=>$number['number']]));
+                $org->organization->numbers()->delete();
+                $org->organization->numbers()->saveMany($data);    
+                $data=[];
+            }
+            if($req->socials){
+                foreach($req->socials as $socials) 
+                   array_push($data,new Social(['type'=>$socials['type'],'url'=>$socials['url']]));
+                $org->organization->socials()->delete();
+                $org->organization->socials()->saveMany($data);    
+            }
+            ////////////////
             if(sizeof($imgs)!==0){
                 //delete old images
                 for($i=0;$i<sizeof($org->organization->images);$i++){
@@ -250,6 +289,30 @@ class OrganizationController extends Controller
             return response()->json(['message'=>'update success'],200);
         }catch(Exception $err){
             return response()->json(['message'=>$err->getMessage(),422]);
+        }
+    }
+    public function getProjects(Request $req){
+        try{  
+            if(auth()->user()->role!="org")
+               return response()->json('not authorized',422);
+            $numItems=$req->per_page??10;
+            $pros=auth()->user()->organization->projects()->paginate($numItems);
+            return response()->json(['projects'=>ProjectResource::collection($pros)],200);
+        } catch(Exception $err){
+                return response()->json(['message'=>$err->getMessage()],422);
+        } 
+    }
+    public function getProject(String $proId){
+        try{
+            if(auth()->user()->role!="org")
+               return response()->json('not authorized',422);
+            $pro=auth()->user()->organization->projects()->find($proId);
+            if(!$pro)
+                return response()->json(['message'=>'this project not found'],404);
+            $pro=new ProjectResource($pro);
+            return response()->json(['project'=>$pro],200);
+        } catch(Exception $err){
+                return response()->json(['message'=>$err->getMessage()],422);
         }
     }
 }

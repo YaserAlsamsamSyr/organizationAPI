@@ -48,9 +48,8 @@ Route::middleware('allow')->prefix('organization')->group(function(){
         Route::delete('/deletePro/{proId}',[OrganizationController::class,'deletePro']);
         Route::post('/createPro',[OrganizationController::class,'createPro']);
         Route::post('/updatePro/{proId}',[OrganizationController::class,'updatePro']);
-        // Route::get('/getProjects',[OrganizationController::class,'getProjects']);
-        // Route::get('/getProject/{proId}',[OrganizationController::class,'getProject']);
-
+        Route::get('/getProjects',[OrganizationController::class,'getProjects']);
+        Route::get('/getProject/{proId}',[OrganizationController::class,'getProject']);
         // profile
         Route::post('/updateMyProfile',[OrganizationController::class,'updateMyProfile']);
    });

@@ -18,7 +18,6 @@ use App\Http\Resources\OpinionResource;
 use App\Http\Resources\OrganizationResource;
 use App\Models\Image;
 use App\Models\Project;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
 use App\Models\Suggest;
 use App\Http\Resources\SuggestResource;
@@ -264,8 +263,6 @@ class UserController extends Controller
             $pro->end_At=$req->end_At;
             $pro->benefitDir=$req->benefitDir;
             $pro->benefitUnd=$req->benefitUnd;
-            if($req->rate!==null)
-                 $pro->rate=$req->rate;
             // upload one pdf
             if($req->hasfile('pdfURL')) {  
                 $file=$req->file('pdfURL');
@@ -355,8 +352,12 @@ class UserController extends Controller
                return throw ValidationException::withMessages(['validation err']);
             if(!preg_match("/^[0-9]+$/", $orgId))
                return throw ValidationException::withMessages(['validation err']);
-            $org=auth()->user()->myOrganizations()->findOrFail($orgId);
-            $pro=$org->organization->projects()->findOrFail($proId);
+            $org=auth()->user()->myOrganizations()->find($orgId);
+            if(!$org)
+                return response()->json(['message'=>'this organization not found'],404);
+            $pro=$org->organization->projects()->find($proId);
+            if(!$pro)
+                return response()->json(['message'=>'this project not found'],404);
             $pro->name=$req->name;
             $pro->address=$req->address;
             // upload one image
