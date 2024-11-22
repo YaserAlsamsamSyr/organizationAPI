@@ -27,6 +27,7 @@ class OrganizationResource extends JsonResource
         "name"=>$this->name,
         "email"=>$this->email,
         "orgId"=>$this->organization->id,
+        "created_at"=>$this->organization->created_at,
         "experience"=>$this->organization->experience,
         "details"=>DetailsResource::collection($this->organization->details),
         "skils"=>SkillResource::collection($this->organization->skils),
