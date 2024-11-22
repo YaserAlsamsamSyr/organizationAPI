@@ -44,8 +44,8 @@ class OrganizationRequest extends FormRequest
             "socials"=>["nullable",'array',"min:1"],
             "socials.*.type"=>['nullable', 'string', 'max:400'],
             "socials.*.url"=>['nullable', 'string', 'max:800'],
-            "images"=> ["required",'array',"min:1"],
-            "images.*"=> ['required','image','mimes:jpeg,jpg,png,gif'],
+            "images"=> ["nullable",'array',"min:1"],
+            "images.*"=> ['nullable','image','mimes:jpeg,jpg,png,gif'],
         ];
                  
         // foreach($this->request()->get('details') as $key => $val)

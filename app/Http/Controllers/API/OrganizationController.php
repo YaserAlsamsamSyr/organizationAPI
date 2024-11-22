@@ -70,8 +70,8 @@ class OrganizationController extends Controller
             }
             $activities=[];
             if($req->activities){
-                foreach($req->activities as $activities) 
-                   array_push($activities,new Activities(['text'=>$activities['text'],'type'=>$activities['type']]));
+                foreach($req->activities as $activitie) 
+                   array_push($activities,new Activities(['text'=>$activitie['text'],'type'=>$activitie['type']]));
                 $pro->activities()->saveMany($activities);
             }
             if(sizeof($imgs)!==0)
@@ -96,6 +96,8 @@ class OrganizationController extends Controller
                 if(File::exists(public_path().'/images/'.$n)) {
                     File::delete(public_path().'/images/'.$n);
                 }
+            }
+            if($pro->pdfURL!="no pdf"){
                 $n=explode("/images/",$pro->pdfURL)[1];
                 if(File::exists(public_path().'/images/'.$n)) {
                     File::delete(public_path().'/images/'.$n);
@@ -183,8 +185,8 @@ class OrganizationController extends Controller
             }
             $activities=[];
             if($req->activities){
-                foreach($req->activities as $activities) 
-                   array_push($activities,new Activities(['text'=>$activities['text'],'type'=>$activities['type']]));
+                foreach($req->activities as $activitie) 
+                   array_push($activities,new Activities(['text'=>$activitie['text'],'type'=>$activitie['type']]));
                 $pro->activities()->delete();
                 $pro->activities()->saveMany($activities);
             }
