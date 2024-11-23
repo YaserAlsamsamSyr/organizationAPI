@@ -20,9 +20,7 @@ return new class extends Migration
             $table->string("message");
             $table->string("address");
             $table->string("phone");
-            $table->foreignId("user_id")->references('id')->on('users')->onDelete('cascade');
-            
-            
+            $table->foreignId("user_id")->references('id')->on('users')->onDelete('cascade');     
         });
     }
 

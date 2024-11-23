@@ -128,7 +128,7 @@ class UserController extends Controller
                 return throw ValidationException::withMessages(['not authorized']);
             if(!preg_match("/^[0-9]+$/", $id))
                 return throw ValidationException::withMessages(['validation err']);
-            $user=auth()->user()->myOrganizations()->findOrFail($id);
+            $user=auth()->user()->myOrganizations()->find($id);
             if(!$user)
                 return response()->json(["message"=>"this organization not found"],404);
             //delete all image and pdf
@@ -312,8 +312,10 @@ class UserController extends Controller
                 return throw ValidationException::withMessages(['validation err']);
             if(!preg_match("/^[0-9]+$/", $orgId))
                 return throw ValidationException::withMessages(['validation err']);
-            $user=auth()->user()->myOrganizations()->findOrfail($orgId);
-            $pro=$user->organization->projects()->findOrFail($proId);
+            $user=auth()->user()->myOrganizations()->find($orgId);
+            if(!$user)  
+                return response()->json(["message"=>"this organization not found"],404);
+            $pro=$user->organization->projects()->find($proId);
             if(!$pro)  
                 return response()->json(["message"=>"this project not found"],404);
             //delete all image and pdf
