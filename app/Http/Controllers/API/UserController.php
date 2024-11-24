@@ -163,7 +163,7 @@ class UserController extends Controller
             $org=auth()->user()->myOrganizations()->findOrFail($id);
             $org->name=$req->name;
             if($req->password!=null)
-                $org->password=Hash::make($req->string($req->password));
+                $org->password=Hash::make($req->string('password'));
             $org->save();
             $org->organization->experience=$req->experience;
             // upload one image
