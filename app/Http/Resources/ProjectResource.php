@@ -36,6 +36,7 @@ class ProjectResource extends JsonResource
             'rate'=>$this->rate,
             'pdfURL'=>$this->pdfURL,
             'videoURL'=>$this->videoURL,
+            'videoLogo'=>$this->videoLogo,
             'allWhoRate'=>$this->allWhoRate,
             'images'=>ImageResource::collection($this->images),
             'comments'=>CommentResource::collection($this->comments),

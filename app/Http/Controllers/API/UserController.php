@@ -273,6 +273,14 @@ class UserController extends Controller
             //
             if($req->videoURL!==null)
                  $pro->videoURL=$req->videoURL;
+            // upload one image
+            if($req->hasfile('videoLogo')) {  
+                $file=$req->file('videoLogo');
+                $name = uniqid().'.'.$file->getClientOriginalExtension();
+                $file->move(public_path('/images/projects/logo'),$name);
+                $pro->videoLogo=asset('/images/projects/logo/'.$name);
+            }
+            //
             // upload multi image
             $imgs=[];
             if($req->hasfile('images')) {
@@ -291,11 +299,41 @@ class UserController extends Controller
                    array_push($summaries,new Summary(['text'=>$sam['text'],'type'=>$sam['type']]));
                 $pro->summaries()->saveMany($summaries);
             }
-            $activities=[];
             if($req->activities){
-                foreach($req->activities as $activitie) 
-                   array_push($activities,new Activities(['text'=>$activitie['text'],'type'=>$activitie['type']]));
-                $pro->activities()->saveMany($activities);
+                foreach($req->activities as $activitie) {
+                    $act=['text'=>$activitie['text'],'type'=>$activitie['type']];
+                    // upload one pdf
+                    if($activitie->hasfile('pdf')) {  
+                        $file=$activitie->file('pdf');
+                        $name = uniqid().'.'.$file->getClientOriginalExtension();
+                        $file->move(public_path('/images/projects/pdfs'),$name);
+                        $act['pdf']=asset('/images/projects/pdfs/'.$name);
+                    }
+                    //
+                    if($activitie->videoUrl!==null)
+                        $act['videoURL']=$activitie->videoUrl;
+                    // upload one image
+                    if($activitie->hasfile('videoImg')) {  
+                        $file=$activitie->file('videoImg');
+                        $name = uniqid().'.'.$file->getClientOriginalExtension();
+                        $file->move(public_path('/images/projects/logo'),$name);
+                        $act['videoImg']=asset('/images/projects/logo/'.$name);
+                    }
+                    //
+                    $newAct=$pro->activities()->save(new Activities($act));
+                    // upload multi image
+                    $img=[];
+                    if($activitie->hasfile('images')) {
+                       foreach($activitie->file('images') as $file) {
+                           $name = uniqid().'.'.$file->getClientOriginalExtension();
+                           $file->move(public_path('/images/projects/imgs'),$name);
+                           array_push($img,new Image(['url'=>asset('/images/projects/imgs/'.$name)]));
+                       }
+                    }
+                    if(sizeof($img)!==0)
+                        $newAct->images()->saveMany($img);
+                    //
+                }
             }
             if(sizeof($imgs)!==0)
                 $pro->images()->saveMany($imgs);
@@ -398,6 +436,19 @@ class UserController extends Controller
             //
             if($req->videoURL!==null)
                  $pro->videoURL=$req->videoURL;
+            // upload one image
+            if($req->hasfile('videoLogo')) {  
+                $file=$req->file('videoLogo');
+                $name = uniqid().'.'.$file->getClientOriginalExtension();
+                $file->move(public_path('/images/projects/logo'),$name);
+                //delete old logo
+                $n=explode("/images/",$pro->videoLogo)[1];
+                if(File::exists(public_path().'/images/'.$n)) {
+                    File::delete(public_path().'/images/'.$n);
+                }
+                //
+                $pro->videoLogo=asset('/images/projects/logo/'.$name);
+            }
             // upload multi image
             $imgs=[];
             if($req->hasfile('images')) {
@@ -416,12 +467,50 @@ class UserController extends Controller
                 $pro->summaries()->delete();
                 $pro->summaries()->saveMany($summaries);
             }
-            $activities=[];
             if($req->activities){
-                foreach($req->activities as $activitie) 
-                   array_push($activities,new Activities(['text'=>$activitie['text'],'type'=>$activitie['type']]));
+                foreach($pro->activities as $activitie)
+                    //delete old images
+                    for($i=0;$i<sizeof($activitie->images);$i++){
+                        $n=explode("/images/",$activitie->images[$i]->url)[1];
+                        if(File::exists(public_path().'/images/'.$n)) {
+                            File::delete(public_path().'/images/'.$n);
+                        }
+                    }
                 $pro->activities()->delete();
-                $pro->activities()->saveMany($activities);
+                foreach($req->activities as $activitie) {
+                    $act=['text'=>$activitie['text'],'type'=>$activitie['type']];
+                    // upload one pdf
+                    if($activitie->hasfile('pdf')) {  
+                        $file=$activitie->file('pdf');
+                        $name = uniqid().'.'.$file->getClientOriginalExtension();
+                        $file->move(public_path('/images/projects/pdfs'),$name);
+                        $act['pdf']=asset('/images/projects/pdfs/'.$name);
+                    }
+                    //
+                    if($activitie->videoUrl!==null)
+                        $act['videoURL']=$activitie->videoUrl;
+                    // upload one image
+                    if($activitie->hasfile('videoImg')) {  
+                        $file=$activitie->file('videoImg');
+                        $name = uniqid().'.'.$file->getClientOriginalExtension();
+                        $file->move(public_path('/images/projects/logo'),$name);
+                        $act['videoImg']=asset('/images/projects/logo/'.$name);
+                    }
+                    //
+                    $newAct=$pro->activities()->save(new Activities($act));
+                    // upload multi image
+                    $img=[];
+                    if($activitie->hasfile('images')) {
+                       foreach($activitie->file('images') as $file) {
+                           $name = uniqid().'.'.$file->getClientOriginalExtension();
+                           $file->move(public_path('/images/projects/imgs'),$name);
+                           array_push($img,new Image(['url'=>asset('/images/projects/imgs/'.$name)]));
+                       }
+                    }
+                    if(sizeof($img)!==0)
+                        $newAct->images()->saveMany($img);
+                    //
+                }
             }
             if(sizeof($imgs)!==0){
                 //delete old images

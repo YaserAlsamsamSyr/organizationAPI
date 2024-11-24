@@ -25,7 +25,8 @@ class Project extends Model
         'pdfURL',
         'videoURL',
         'organization_id',
-        'allWhoRate'
+        'allWhoRate',
+        'videoLogo'
     ];
 
     public function owner(){

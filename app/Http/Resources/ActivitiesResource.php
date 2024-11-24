@@ -17,7 +17,13 @@ class ActivitiesResource extends JsonResource
         return [
             'id'=>$this->id,
             'type'=>$this->type,
-            'text'=>$this->text
+            'text'=>$this->text,
+            'videoUrl'=>$this->videoUrl,
+            'videoImg'=>$this->videoImg,
+            'rate'=>$this->rate,
+            'pdf'=>$this->pdf,
+            'comments'=>CommentResource::collection($this->comments),
+            'images'=>ImageResource::collection($this->images)
         ];
     }
 }
