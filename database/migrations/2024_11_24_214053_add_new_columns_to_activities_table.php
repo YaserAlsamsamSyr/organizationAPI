@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('activities', function (Blueprint $table) {
-            $table->string('videoImg');
-            $table->string('videoUrl');
-            $table->string('pdf');
-            $table->integer('rate');
+            $table->string('videoImg')->default('no image');
+            $table->string('videoUrl')->nullable();
+            $table->string('pdf')->default('no pdf');
+            $table->integer('rate')->default(0);
         });
     }
 

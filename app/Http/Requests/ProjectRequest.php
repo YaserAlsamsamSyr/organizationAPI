@@ -43,7 +43,7 @@ class ProjectRequest extends FormRequest
             'activities.*.images.*' => ['nullable','image','mimes:jpeg,jpg,png,gif'],
             "summaries"=>["nullable",'array',"min:1"],
             'summaries.*.text' => ['nullable', 'string'],
-            'summaries.*.type' => ['nullable', 'string', 'max:10000'] ,
+            'summaries.*.type' => ['nullable', 'string', 'max:10000'],
             "images"=>["nullable",'array',"min:1"],
             "images.*"=>['nullable','image','mimes:jpeg,jpg,png,gif'],
         ];
