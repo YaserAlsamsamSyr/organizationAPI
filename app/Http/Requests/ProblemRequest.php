@@ -31,10 +31,9 @@ class ProblemRequest extends FormRequest
             'benifit'=> ['required', 'string', 'max:500'],
             'problemDate'=> ['required', 'string', 'max:100'],
             'isPrevious'=> ['required', 'string', 'max:500'],
+            'typeProblems'=>['nullable','array','min:1'],
+            'typeProblems.*.type' => ['nullable', 'string', 'max:400']
         ];
-        foreach($this->request->get('typeProblems') as $key => $val){
-            $rules['typeProblems.type'] = ['nullable', 'string', 'max:400']; 
-        }
         return $rules;
     }
 }

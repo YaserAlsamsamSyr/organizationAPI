@@ -23,9 +23,9 @@ class Activities extends Model
         return $this->belongsTo(Project::class);
     }
     public function comments(){
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Comment::class,'activity_id');
     }
     public function images(){
-        return $this->hasMany(Image::class);
+        return $this->hasMany(Image::class,'activity_id');
     }
 }

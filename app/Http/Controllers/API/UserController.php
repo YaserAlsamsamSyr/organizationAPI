@@ -13,7 +13,6 @@ use App\Models\Organization;
 use App\Http\Requests\OrganizationRequest;
 use Illuminate\Validation\ValidationException;
 use App\Http\Requests\ProjectRequest;
-use App\Http\Requests\TrafficRequest;
 use App\Http\Resources\OpinionResource;
 use App\Http\Resources\OrganizationResource;
 use App\Models\Image;
@@ -51,8 +50,9 @@ class UserController extends Controller
                 return response()->json(['error'=>'try agen'],422);
             }
             $token=auth()->user()->createToken('admin',expiresAt:now()->addDays(4),abilities:['admin'])->plainTextToken;
-            $data=new UserResource($user);
-            return response()->json(['token'=>$token,'response'=>$data],201);
+            $adminData=new UserResource(auth()->user());
+            $allOrganizations=OrganizationResource::collection(User::where('role','org')->limit(20)->get());
+            return response()->json(['token'=>$token,'response'=>['admin'=>['id'=>$adminData->id,'name'=>$adminData->name,'email'=>$adminData->email],'allOrganizations'=>$allOrganizations]],200);
         }catch(Exception $err){
                 return response()->json(['message'=>$err->getMessage()],422);
           }
@@ -646,27 +646,6 @@ class UserController extends Controller
             return response()->json(['message'=>$err->getMessage()],422);
         }
     }
-    public function addCustomerToTraffic(TrafficRequest  $req){
-               try{
-                if(auth()->user()->role!="admin")
-                    return response()->json('not authorized',422);
-                $newTraffic=new Traffic();
-                $newTraffic->mac=$req->mac;
-                $newTraffic->day=date('d');
-                $newTraffic->month=date('m');
-                $newTraffic->year=date('y');
-                $isFound=Traffic::where('mac',$req->mac)->first();
-                if(!$isFound)//first time
-                    $newTraffic->firstTime=true;
-                else
-                    $newTraffic->firstTime=false;
-                $newTraffic->user_id=auth()->user()->id;
-                $newTraffic->save();
-                return response()->json(['message'=>'added success'],201);
-               } catch(Exception $err){
-                   return response()->json(['message'=>$err->getMessage(),422]);
-               }
-    }
     public function getProjects(Request $req){
         try{  
             if(auth()->user()->role!="admin")
@@ -682,7 +661,7 @@ class UserController extends Controller
         try{
             if(auth()->user()->role!="admin")
                return response()->json('not authorized',422);
-            $org=auth()->user()->myOrganizations()->find($orgId);
+            $org=User::find($orgId)->where('role','org');
             if(!$org)
                 return response()->json(['message'=>'this organization not found'],404);
             $pro=$org->organization->projects()->find($proId);
@@ -698,7 +677,7 @@ class UserController extends Controller
         try{  
             if(auth()->user()->role!="admin")
                return response()->json('not authorized',422);
-            $org=auth()->user()->myOrganizations()->find($orgId);
+            $org=User::find($orgId)->where('role','org');
             if(!$org)
                 return response()->json(['message'=>'this organization not found'],404);
             return response()->json(['organization'=>new OrganizationResource($org)],200);
@@ -711,7 +690,7 @@ class UserController extends Controller
             if(auth()->user()->role!="admin")
                return response()->json('not authorized',422);
             $numItems=$req->per_page??10;
-            $ors=auth()->user()->myOrganizations()->paginate($numItems);
+            $ors=User::where('role','org')->paginate($numItems);
             return response()->json(['organizations'=>OrganizationResource::collection($ors)],200);
         } catch(Exception $err){
                 return response()->json(['message'=>$err->getMessage()],422);

@@ -8,7 +8,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Organization;
 use Laravel\Sanctum\HasApiTokens;
-use APP\Models\Traiffic;
 
 class User extends Authenticatable
 {
@@ -61,8 +60,5 @@ class User extends Authenticatable
 
     public function owner(){
         return $this->belongsTo(self::class,'admin_id');
-    }
-    public function traffics(){
-        return $this->hasMany(Traffic::class);
     }
 }

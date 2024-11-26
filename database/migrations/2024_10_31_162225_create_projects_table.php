@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('logo')->default('no logo');
             $table->date('start_At');
             $table->date('end_At');
-            $table->integer('rate')->default(0);
+            $table->float('rate')->default(0);
             $table->integer('benefitDir');
             $table->integer('benefitUnd');
             $table->string('pdfURL')->default('no pdf');

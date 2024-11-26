@@ -11,6 +11,7 @@ use App\Http\Resources\SkillResource;
 use App\Http\Resources\DetailsResource;
 use App\Http\Resources\NumberResource;
 use App\Http\Resources\SocialsResource;
+use App\Http\Resources\ProblemResource;
 
 class OrganizationResource extends JsonResource
 {
@@ -39,7 +40,9 @@ class OrganizationResource extends JsonResource
         "socials"=>SocialsResource::collection($this->organization->socials),
         "address"=>$this->organization->address,
         "phone"=>$this->organization->phone,
-        "projects"=>ProjectResource::collection($this->organization->projects)
+        "projects"=>ProjectResource::collection($this->organization->projects),
+        'suggests'=>SuggestResource::collection($this->organization->suggests),
+        'problems'=>ProblemResource::collection($this->organization->problems)
        ];
     }
 }

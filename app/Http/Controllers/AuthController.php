@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rules;
 use App\Http\Resources\OrganizationResource;
 use App\Http\Resources\UserResource;
+use App\Models\User;
 use Exception;
 
-use function PHPUnit\Framework\isEmpty;
 
 class AuthController extends Controller
 {
@@ -22,8 +22,9 @@ class AuthController extends Controller
         if(!auth()->attempt(['email' => $req->email, 'password' => $req->password,'role'=>'admin']))
             return response()->json(['message'=>'password or email not correct'],422);
        $token=auth()->user()->createToken('admin',expiresAt:now()->addDays(4),abilities:['admin'])->plainTextToken;
-       $data=new UserResource(auth()->user());
-       return response()->json(['token'=>$token,'response'=>$data],200);
+       $adminData=new UserResource(auth()->user());
+       $allOrganizations=OrganizationResource::collection(User::where('role','org')->limit(20)->get());
+       return response()->json(['token'=>$token,'response'=>['admin'=>['id'=>$adminData->id,'name'=>$adminData->name,'email'=>$adminData->email],'allOrganizations'=>$allOrganizations]],200);
       } catch(Exception $err){
         return response()->json(["message"=>$err->getMessage()],500);
       }

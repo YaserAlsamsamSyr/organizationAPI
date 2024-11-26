@@ -33,7 +33,6 @@ Route::middleware('allow')->prefix('masterAdmin')->group(function(){
         Route::post('/updateMyProfile',[UserController::class,'updateMyProfile']);
         //traffic
         Route::get('/getTraffic',[UserController::class,'getTraffic']);
-        Route::post('/addCustomerToTraffic',[UserController::class,'addCustomerToTraffic']);
         //opinion
         Route::get('/getOpinions/{projectId}',[UserController::class,'getOpinions']);
         Route::delete('/deleteOpinion/{projectId}/{opinionId}',[UserController::class,'deleteOpinion']);
@@ -62,5 +61,10 @@ Route::middleware('allow')->prefix('client')->group(function(){
         Route::get('/getOrganizations',[ClientController::class,'getOrganizations']);
         Route::post('/addRate/{proId}',[ClientController::class,'addRate']);
         Route::post('/addComment/{proId}',[ClientController::class,'addComment']);
+        Route::post('/addOpinion/{proId}',[ClientController::class,'addOpinion']);
         Route::get('/downloadPDF/{proId}',[ClientController::class,'downloadPDF']);
+        Route::get('/getOnlyOrganizations',[ClientController::class,'getOnlyOrganizations']);
+        Route::get('/getOnlyProjects/{orgId}',[ClientController::class,'getOnlyProjects']);
+        Route::get('/getOnlyActivities/{proId}',[ClientController::class,'getOnlyActivities']);
+        Route::post('/addCustomerToTraffic',[ClientController::class,'addCustomerToTraffic']);
 });

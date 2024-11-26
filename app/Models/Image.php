@@ -17,6 +17,6 @@ class Image extends Model
         return $this->belongsTo(Organization::class);
     }
     public function activity(){
-        return $this->belongsTo(Activities::class);
+        return $this->belongsTo(Activities::class,'activity_id');
     }
 }

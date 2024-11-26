@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
 
 class Traffic extends Model
 {
@@ -12,11 +11,6 @@ class Traffic extends Model
         'firstTime',
         'year',
         'month',
-        'day',
-        'user_id'
+        'day'
     ];
-
-    public function user(){
-        return $this->belongsTo(User::class);
-    }
 }
