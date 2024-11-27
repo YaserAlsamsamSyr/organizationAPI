@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('videoImg')->default('no image');
             $table->string('videoUrl')->nullable();
             $table->string('pdf')->default('no pdf');
-            $table->integer('rate')->default(0);
+            $table->float('rate')->default(0);
         });
     }
 

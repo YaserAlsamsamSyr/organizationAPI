@@ -650,7 +650,7 @@ class UserController extends Controller
                 }
                 //
                 if($req->videoUrl!==null)
-                    $act['videoURL']=$req->videoUrl;
+                    $act['videoUrl']=$req->videoUrl;
                 // upload one image
                 if($req->hasfile('videoImg')) {  
                     $file=$req->file('videoImg');
@@ -711,22 +711,22 @@ class UserController extends Controller
             //
             // upload one pdf
             if($req->hasfile('pdf')) {  
+                //delete old pdf
+                if($act->pdf!="no pdf"){
+                    $n=explode("/images/",$act->pdf)[1];
+                    if(File::exists(public_path().'/images/'.$n)) {
+                        File::delete(public_path().'/images/'.$n);
+                }
                 $file=$req->file('pdf');
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/projects/pdfs'),$name);
-                //delete old pdf
-                if($act->pdf!=="no pdf"){
-                    $n=explode("/images/",$act->pdf)[1];
-                    if(File::exists(public_path().'/images/projects/pdfs/'.$n)) {
-                        File::delete(public_path().'/images/projects/pdfs/'.$n);
-                    }
                 }
                 //
                 $act->pdf=asset('/images/projects/pdfs/'.$name);
             }
             //
             if($req->videoUrl!==null)
-                $act->videoURL=$req->videoUrl;
+                $act->videoUrl=$req->videoUrl;
             // upload one image
             if($req->hasfile('videoImg')) { 
                 if($act->videoImg!=="no image"){
