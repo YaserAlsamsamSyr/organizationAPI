@@ -75,5 +75,6 @@ Route::middleware('allow')->prefix('client')->group(function(){
         Route::get('/getOnlyOrganizations',[ClientController::class,'getOnlyOrganizations']);
         Route::get('/getOnlyProjects/{orgId}',[ClientController::class,'getOnlyProjects']);
         Route::get('/getOnlyActivities/{proId}',[ClientController::class,'getOnlyActivities']);
+        Route::post('/addRateToAct/{actId}',[ClientController::class,'addRateToAct']);
         Route::post('/addCustomerToTraffic',[ClientController::class,'addCustomerToTraffic']);
 });

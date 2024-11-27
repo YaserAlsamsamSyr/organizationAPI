@@ -23,6 +23,7 @@ use App\Models\TypeProblem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use App\Http\Resources\OnlyOrganizationResource;
+use App\Models\Activities;
 
 class ClientController extends Controller
 {
@@ -120,6 +121,23 @@ class ClientController extends Controller
                     $pro=Project::find($proId);
                     if(!$pro)
                         return response()->json(['message'=>'project not found'],404);  
+                    $pro->rate=(floatVal($pro->rate)+floatVal($req->rate))/2.0;
+                    $pro->allWhoRate++;
+                    $pro->save();
+                    return response()->json(['message'=>'rating success'],200);
+                  }catch(Exception $err){
+                      return response()->json(['message'=>$err->getMessage()],422);
+                  }
+    }
+    public function addRateToAct(Request $req,string $actId){
+                  try{
+                    if(!preg_match("/^[0-9]+$/", $actId))
+                           return throw ValidationException::withMessages(['validation err']);
+                    if(!preg_match("/^[0-5]{1}(.[0-9]{1,2})?$/", $req->rate))
+                           return throw ValidationException::withMessages(['rating value err , must be [0 -> 5]']);
+                    $pro=Activities::find($actId);
+                    if(!$pro)
+                        return response()->json(['message'=>'activity not found'],404);  
                     $pro->rate=(floatVal($pro->rate)+floatVal($req->rate))/2.0;
                     $pro->allWhoRate++;
                     $pro->save();
@@ -244,5 +262,5 @@ class ClientController extends Controller
         } catch(Exception $err){
             return response()->json(['message'=>$err->getMessage(),422]);
         }
-}
+    }  
 }

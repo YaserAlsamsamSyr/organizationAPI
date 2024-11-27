@@ -22,6 +22,7 @@ class ActivitiesResource extends JsonResource
             'videoImg'=>$this->videoImg,
             'rate'=>$this->rate,
             'pdf'=>$this->pdf,
+            'allWhoRate'=>$this->allWhoRate,
             'comments'=>CommentResource::collection($this->comments),
             'images'=>ImageResource::collection($this->images)
         ];
