@@ -57,7 +57,7 @@ Route::middleware('allow')->prefix('organization')->group(function(){
         // profile
         Route::post('/updateMyProfile',[OrganizationController::class,'updateMyProfile']);
         //activity
-        Route::post('/createActivity',[UserController::class,'createActivity']);
+        Route::post('/createActivity/{proId}',[UserController::class,'createActivity']);
         Route::post('/updateActivity/{actId}',[UserController::class,'updateActivity']);
         Route::delete('/deleteActivity/{actId}',[UserController::class,'deleteActivity']);
    });
