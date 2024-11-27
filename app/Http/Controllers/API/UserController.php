@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ActivitiesRequest;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\Hash;
@@ -29,7 +30,6 @@ use App\Models\Problem;
 use App\Models\Skil;
 use App\Models\Social;
 use App\Models\Summary;
-use App\Models\Traffic;
 
 class UserController extends Controller
 {
@@ -128,7 +128,7 @@ class UserController extends Controller
                 return throw ValidationException::withMessages(['not authorized']);
             if(!preg_match("/^[0-9]+$/", $id))
                 return throw ValidationException::withMessages(['validation err']);
-            $user=auth()->user()->myOrganizations()->find($id);
+            $user=User::where('role','org')->find($id);
             if(!$user)
                 return response()->json(["message"=>"this organization not found"],404);
             //delete all image and pdf
@@ -160,7 +160,9 @@ class UserController extends Controller
                return response()->json(['message'=>"not authorized"]);
             if(!preg_match("/^[0-9]+$/", $id))
                return throw ValidationException::withMessages(['validation err']);
-            $org=auth()->user()->myOrganizations()->findOrFail($id);
+            $org=User::where('role','org')->find($id);
+            if(!$org)
+              return response()->json(['message'=>'this organization not found'],404);
             $org->name=$req->name;
             if($req->password!=null)
                 $org->password=Hash::make($req->string('password'));
@@ -172,9 +174,11 @@ class UserController extends Controller
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/organizations/logo'),$name);
                 //delete old logo
-                $n=explode("/images/",$org->organization->logo)[1];
-                if(File::exists(public_path().'/images/'.$n)) {
-                    File::delete(public_path().'/images/'.$n);
+                if($org->organization->logo!="no logo"){
+                    $n=explode("/images/",$org->organization->logo)[1];
+                    if(File::exists(public_path().'/images/'.$n)) {
+                        File::delete(public_path().'/images/'.$n);
+                    }
                 }
                 //
                 $org->organization->logo=asset('/images/organizations/logo/'.$name);
@@ -288,52 +292,18 @@ class UserController extends Controller
                    $name = uniqid().'.'.$file->getClientOriginalExtension();
                    $file->move(public_path('/images/projects/imgs'),$name);
                    array_push($imgs,new Image(['url'=>asset('/images/projects/imgs/'.$name)]));
-               }
+               }    
             }
             //
-            $user=auth()->user()->myOrganizations()->findOrfail($orgId);
+            $user=User::where('role','org')->find($orgId);
+            if(!$user)
+                return response()->json(['message'=>'this organization not found'],404);
             $pro=$user->organization->projects()->save($pro);
             $summaries=[];
             if($req->summaries){
                 foreach($req->summaries as $sam) 
                    array_push($summaries,new Summary(['text'=>$sam['text'],'type'=>$sam['type']]));
                 $pro->summaries()->saveMany($summaries);
-            }
-            if($req->activities){
-                foreach($req->activities as $activitie) {
-                    $act=['text'=>$activitie['text'],'type'=>$activitie['type']];
-                    // upload one pdf
-                    if($activitie->hasfile('pdf')) {  
-                        $file=$activitie->file('pdf');
-                        $name = uniqid().'.'.$file->getClientOriginalExtension();
-                        $file->move(public_path('/images/projects/pdfs'),$name);
-                        $act['pdf']=asset('/images/projects/pdfs/'.$name);
-                    }
-                    //
-                    if($activitie->videoUrl!==null)
-                        $act['videoURL']=$activitie->videoUrl;
-                    // upload one image
-                    if($activitie->hasfile('videoImg')) {  
-                        $file=$activitie->file('videoImg');
-                        $name = uniqid().'.'.$file->getClientOriginalExtension();
-                        $file->move(public_path('/images/projects/logo'),$name);
-                        $act['videoImg']=asset('/images/projects/logo/'.$name);
-                    }
-                    //
-                    $newAct=$pro->activities()->save(new Activities($act));
-                    // upload multi image
-                    $img=[];
-                    if($activitie->hasfile('images')) {
-                       foreach($activitie->file('images') as $file) {
-                           $name = uniqid().'.'.$file->getClientOriginalExtension();
-                           $file->move(public_path('/images/projects/imgs'),$name);
-                           array_push($img,new Image(['url'=>asset('/images/projects/imgs/'.$name)]));
-                       }
-                    }
-                    if(sizeof($img)!==0)
-                        $newAct->images()->saveMany($img);
-                    //
-                }
             }
             if(sizeof($imgs)!==0)
                 $pro->images()->saveMany($imgs);
@@ -350,7 +320,7 @@ class UserController extends Controller
                 return throw ValidationException::withMessages(['validation err']);
             if(!preg_match("/^[0-9]+$/", $orgId))
                 return throw ValidationException::withMessages(['validation err']);
-            $user=auth()->user()->myOrganizations()->find($orgId);
+            $user=User::where('role','org')->find($orgId);
             if(!$user)  
                 return response()->json(["message"=>"this organization not found"],404);
             $pro=$user->organization->projects()->find($proId);
@@ -392,7 +362,7 @@ class UserController extends Controller
                return throw ValidationException::withMessages(['validation err']);
             if(!preg_match("/^[0-9]+$/", $orgId))
                return throw ValidationException::withMessages(['validation err']);
-            $org=auth()->user()->myOrganizations()->find($orgId);
+            $org=User::where('role','org')->find($orgId);
             if(!$org)
                 return response()->json(['message'=>'this organization not found'],404);
             $pro=$org->organization->projects()->find($proId);
@@ -406,9 +376,11 @@ class UserController extends Controller
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/projects/logo'),$name);
                 //delete old logo
-                $n=explode("/images/",$pro->logo)[1];
-                if(File::exists(public_path().'/images/'.$n)) {
-                    File::delete(public_path().'/images/'.$n);
+                if($pro->logo!="no logo"){
+                    $n=explode("/images/",$pro->logo)[1];
+                    if(File::exists(public_path().'/images/'.$n)) {
+                        File::delete(public_path().'/images/'.$n);
+                    }
                 }
                 //
                 $pro->logo=asset('/images/projects/logo/'.$name);
@@ -426,9 +398,11 @@ class UserController extends Controller
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/projects/pdfs'),$name);
                 //delete old pdf
-                $n=explode("/images/",$pro->pdfURL)[1];
-                if(File::exists(public_path().'/images/'.$n)) {
-                    File::delete(public_path().'/images/'.$n);
+                if($pro->pdfURL!=="no pdf"){
+                    $n=explode("/images/",$pro->pdfURL)[1];
+                    if(File::exists(public_path().'/images/'.$n)) {
+                        File::delete(public_path().'/images/'.$n);
+                    }
                 }
                 //
                 $pro->pdfURL=asset('/images/projects/pdfs/'.$name);
@@ -442,9 +416,11 @@ class UserController extends Controller
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/projects/logo'),$name);
                 //delete old logo
-                $n=explode("/images/",$pro->videoLogo)[1];
-                if(File::exists(public_path().'/images/'.$n)) {
-                    File::delete(public_path().'/images/'.$n);
+                if($pro->videoLogo!="no image"){
+                    $n=explode("/images/",$pro->videoLogo)[1];
+                    if(File::exists(public_path().'/images/'.$n)) {
+                        File::delete(public_path().'/images/'.$n);
+                    }
                 }
                 //
                 $pro->videoLogo=asset('/images/projects/logo/'.$name);
@@ -466,51 +442,6 @@ class UserController extends Controller
                    array_push($summaries,new Summary(['text'=>$sam['text'],'type'=>$sam['type']]));
                 $pro->summaries()->delete();
                 $pro->summaries()->saveMany($summaries);
-            }
-            if($req->activities){
-                foreach($pro->activities as $activitie)
-                    //delete old images
-                    for($i=0;$i<sizeof($activitie->images);$i++){
-                        $n=explode("/images/",$activitie->images[$i]->url)[1];
-                        if(File::exists(public_path().'/images/'.$n)) {
-                            File::delete(public_path().'/images/'.$n);
-                        }
-                    }
-                $pro->activities()->delete();
-                foreach($req->activities as $activitie) {
-                    $act=['text'=>$activitie['text'],'type'=>$activitie['type']];
-                    // upload one pdf
-                    if($activitie->hasfile('pdf')) {  
-                        $file=$activitie->file('pdf');
-                        $name = uniqid().'.'.$file->getClientOriginalExtension();
-                        $file->move(public_path('/images/projects/pdfs'),$name);
-                        $act['pdf']=asset('/images/projects/pdfs/'.$name);
-                    }
-                    //
-                    if($activitie->videoUrl!==null)
-                        $act['videoURL']=$activitie->videoUrl;
-                    // upload one image
-                    if($activitie->hasfile('videoImg')) {  
-                        $file=$activitie->file('videoImg');
-                        $name = uniqid().'.'.$file->getClientOriginalExtension();
-                        $file->move(public_path('/images/projects/logo'),$name);
-                        $act['videoImg']=asset('/images/projects/logo/'.$name);
-                    }
-                    //
-                    $newAct=$pro->activities()->save(new Activities($act));
-                    // upload multi image
-                    $img=[];
-                    if($activitie->hasfile('images')) {
-                       foreach($activitie->file('images') as $file) {
-                           $name = uniqid().'.'.$file->getClientOriginalExtension();
-                           $file->move(public_path('/images/projects/imgs'),$name);
-                           array_push($img,new Image(['url'=>asset('/images/projects/imgs/'.$name)]));
-                       }
-                    }
-                    if(sizeof($img)!==0)
-                        $newAct->images()->saveMany($img);
-                    //
-                }
             }
             if(sizeof($imgs)!==0){
                 //delete old images
@@ -661,7 +592,7 @@ class UserController extends Controller
         try{
             if(auth()->user()->role!="admin")
                return response()->json('not authorized',422);
-            $org=User::find($orgId)->where('role','org');
+            $org=User::where('role','org')->find($orgId);
             if(!$org)
                 return response()->json(['message'=>'this organization not found'],404);
             $pro=$org->organization->projects()->find($proId);
@@ -677,7 +608,7 @@ class UserController extends Controller
         try{  
             if(auth()->user()->role!="admin")
                return response()->json('not authorized',422);
-            $org=User::find($orgId)->where('role','org');
+            $org=User::where('role','org')->find($orgId);
             if(!$org)
                 return response()->json(['message'=>'this organization not found'],404);
             return response()->json(['organization'=>new OrganizationResource($org)],200);
@@ -703,6 +634,131 @@ class UserController extends Controller
             
         } catch(Exception $err){
             return response()->json(['message'=>$err->getMessage(),422]);
+        }
+    }
+    public function createActivity(ActivitiesRequest $req,string $proId){
+            try{
+                if(!preg_match("/^[0-9]+$/", $proId))
+                     return throw ValidationException::withMessages(['validation err']);
+                $act=['text'=>$req->text,'type'=>$req->type];
+                // upload one pdf
+                if($req->hasfile('pdf')) {  
+                    $file=$req->file('pdf');
+                    $name = uniqid().'.'.$file->getClientOriginalExtension();
+                    $file->move(public_path('/images/projects/pdfs'),$name);
+                    $act['pdf']=asset('/images/projects/pdfs/'.$name);
+                }
+                //
+                if($req->videoUrl!==null)
+                    $act['videoURL']=$req->videoUrl;
+                // upload one image
+                if($req->hasfile('videoImg')) {  
+                    $file=$req->file('videoImg');
+                    $name = uniqid().'.'.$file->getClientOriginalExtension();
+                    $file->move(public_path('/images/projects/logo'),$name);
+                    $act['videoImg']=asset('/images/projects/logo/'.$name);
+                }
+                //
+                $pro=Project::find($proId);
+                if(!$pro)
+                    return response()->json(['message'=>'this project not found'],404);
+                $newAct=$pro->activities()->save(new Activities($act));
+                // upload multi image
+                $img=[];
+                if($req->hasfile('images')) {
+                   foreach($req->file('images') as $file) {
+                       $name = uniqid().'.'.$file->getClientOriginalExtension();
+                       $file->move(public_path('/images/projects/imgs'),$name);
+                       array_push($img,new Image(['url'=>asset('/images/projects/imgs/'.$name)]));
+                   }
+                }
+                if(sizeof($img)!==0)
+                    $newAct->images()->saveMany($img);
+                return response()->json(['message'=>'add success'],201);
+            } catch(Exception $err){
+                return response()->json(['message'=>$err->getMessage()],422);
+            }
+    }
+    public function updateActivity(ActivitiesRequest $req,string $actId){
+        try{
+            if(!preg_match("/^[0-9]+$/", $actId))
+                 return throw ValidationException::withMessages(['validation err']);
+            $act=Activities::find($actId);
+            if(!$act)
+                 return response()->json(['message'=>'this activity not found'],404);
+            if($req->hasfile('images')) {  
+                //delete old images
+                for($i=0;$i<sizeof($act->images);$i++){
+                    $n=explode("/images/",$act->images[$i]->url)[1];
+                    if(File::exists(public_path().'/images/'.$n)) {
+                        File::delete(public_path().'/images/'.$n);
+                    }
+                }
+                // upload multi image
+                $img=[];
+                if($req->hasfile('images')) {
+                   foreach($req->file('images') as $file) {
+                       $name = uniqid().'.'.$file->getClientOriginalExtension();
+                       $file->move(public_path('/images/projects/imgs'),$name);
+                       array_push($img,new Image(['url'=>asset('/images/projects/imgs/'.$name)]));
+                   }
+                }
+                if(sizeof($img)!==0)
+                    $act->images()->saveMany($img);
+            }
+            $act->text=$req->text;
+            $act->type=$req->type;
+            //
+            // upload one pdf
+            if($req->hasfile('pdf')) {  
+                $file=$req->file('pdf');
+                $name = uniqid().'.'.$file->getClientOriginalExtension();
+                $file->move(public_path('/images/projects/pdfs'),$name);
+                //delete old pdf
+                if($act->pdf!=="no pdf"){
+                    $n=explode("/images/",$act->pdf)[1];
+                    if(File::exists(public_path().'/images/projects/pdfs/'.$n)) {
+                        File::delete(public_path().'/images/projects/pdfs/'.$n);
+                    }
+                }
+                //
+                $act->pdf=asset('/images/projects/pdfs/'.$name);
+            }
+            //
+            if($req->videoUrl!==null)
+                $act->videoURL=$req->videoUrl;
+            // upload one image
+            if($req->hasfile('videoImg')) { 
+                if($act->videoImg!=="no image"){
+                    $n=explode("/images/",$act->videoImg)[1];
+                    if(File::exists(public_path().'/images/'.$n)) {
+                        File::delete(public_path().'/images/'.$n);
+                    }
+                } 
+                $file=$req->file('videoImg');
+                $name = uniqid().'.'.$file->getClientOriginalExtension();
+                $file->move(public_path('/images/projects/logo'),$name);
+                $act->videoImg=asset('/images/projects/logo/'.$name);
+            }
+            if(!$act->save())
+                return response()->json(['message'=>'update fail'],422);
+            return response()->json(['message'=>'update success'],200);
+        } catch(Exception $err){
+            return response()->json(['message'=>$err->getMessage()],422);
+        }
+    }
+    public function deleteActivity(string $actId){
+        try{
+            if(!preg_match("/^[0-9]+$/", $actId))
+                return throw ValidationException::withMessages(['validation err']);
+            $act=Activities::find($actId);
+            if(!$act)
+                 return response()->json(['message'=>'this activity not found'],404);
+            if(!$act->delete())
+                return response()->json(['message'=>'delete fail'],422);
+            return response()->json(['message'=>'delete success'],200);
+        } catch(Exception $err){
+            return response()->json(['message'=>$err->getMessage()],422);
         }
     }
 }

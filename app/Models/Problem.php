@@ -19,6 +19,7 @@ class Problem extends Model
         'email',
         'address',
         'benifit',
+        'text',
         'problemDate',
         'isPrevious',
     ];

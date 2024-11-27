@@ -36,6 +36,11 @@ Route::middleware('allow')->prefix('masterAdmin')->group(function(){
         //opinion
         Route::get('/getOpinions/{projectId}',[UserController::class,'getOpinions']);
         Route::delete('/deleteOpinion/{projectId}/{opinionId}',[UserController::class,'deleteOpinion']);
+        //activity
+        Route::post('/createActivity/{proId}',[UserController::class,'createActivity']);
+        Route::post('/updateActivity/{actId}',[UserController::class,'updateActivity']);
+        Route::delete('/deleteActivity/{actId}',[UserController::class,'deleteActivity']);
+        
     });
 });
 // organization
@@ -51,6 +56,10 @@ Route::middleware('allow')->prefix('organization')->group(function(){
         Route::get('/getProject/{proId}',[OrganizationController::class,'getProject']);
         // profile
         Route::post('/updateMyProfile',[OrganizationController::class,'updateMyProfile']);
+        //activity
+        Route::post('/createActivity',[UserController::class,'createActivity']);
+        Route::post('/updateActivity/{actId}',[UserController::class,'updateActivity']);
+        Route::delete('/deleteActivity/{actId}',[UserController::class,'deleteActivity']);
    });
 });
 //client

@@ -29,6 +29,7 @@ class ProblemRequest extends FormRequest
             'email'=> ['required', 'string', 'max:500','regex:/^[a-zA-Z0-9]+@[a-zA-Z]+.[a-zA-Z]+$/'],
             'address'=> ['required', 'string', 'max:300'],
             'benifit'=> ['required', 'string', 'max:500'],
+            'text'=> ['required', 'string'],
             'problemDate'=> ['required', 'string', 'max:100'],
             'isPrevious'=> ['required', 'string', 'max:500'],
             'typeProblems'=>['nullable','array','min:1'],

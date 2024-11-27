@@ -35,6 +35,7 @@ class ClientController extends Controller
                     $pro->phone=$req->phone;
                     $pro->email=$req->email;
                     $pro->address=$req->address;
+                    $pro->text=$req->text;
                     $pro->benifit=$req->benifit;
                     $pro->problemDate=$req->problemDate;
                     $pro->isPrevious=$req->isPrevious;
