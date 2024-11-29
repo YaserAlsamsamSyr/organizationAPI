@@ -307,7 +307,7 @@ class UserController extends Controller
             }
             if(sizeof($imgs)!==0)
                 $pro->images()->saveMany($imgs);
-            return response()->json(['message'=>'added success'],201);
+            return response()->json(['message'=>'added success','proId'=>$pro->id],201);
         } catch(Exception $err){
                return response()->json(['message'=>$err->getMessage(),422]);
         }

@@ -77,4 +77,9 @@ Route::middleware('allow')->prefix('client')->group(function(){
         Route::get('/getOnlyActivities/{proId}',[ClientController::class,'getOnlyActivities']);
         Route::post('/addRateToAct/{actId}',[ClientController::class,'addRateToAct']);
         Route::post('/addCustomerToTraffic',[ClientController::class,'addCustomerToTraffic']);
+        //new
+        Route::get('/getProjectComments/{proId}',[ClientController::class,'getProjectComments']);
+        Route::get('/getActivityComments/{actId}',[ClientController::class,'getActivityComments']);
+        Route::post('/addCommentToActivity/{actId}',[ClientController::class,'addCommentToActivity']);
+        Route::get('/infoForHomePage',[ClientController::class,'infoForHomePage']);
 });

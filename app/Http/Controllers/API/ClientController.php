@@ -14,6 +14,7 @@ use App\Models\Project;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\OrganizationResource;
 use App\Http\Requests\TrafficRequest;
+use App\Http\Resources\CommentResource;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 use App\Models\Comment;
@@ -24,6 +25,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use App\Http\Resources\OnlyOrganizationResource;
 use App\Models\Activities;
+use App\Models\Organization;
 
 class ClientController extends Controller
 {
@@ -263,4 +265,76 @@ class ClientController extends Controller
             return response()->json(['message'=>$err->getMessage(),422]);
         }
     }  
+    // new
+    public function getProjectComments(string $proId){
+        try {
+            if(!preg_match("/^[0-9]+$/", $proId))
+                   return throw ValidationException::withMessages(['validation error']);
+            $res=Project::find($proId);
+            if(!$res)
+                return response()->json(['message','this project not found'],404);
+            $res=CommentResource::collection($res->comments);
+            return response()->json($res,200);
+        } catch(Exception $err){
+            return response()->json(['message'=>$err->getMessage()],422);
+        }
+    }
+    public function getActivityComments(string $actId){
+        try {
+            if(!preg_match("/^[0-9]+$/", $actId))
+                   return throw ValidationException::withMessages(['validation error']);
+            $res=Activities::find($actId);
+            if(!$res)
+                return response()->json(['message','this activity not found'],404);
+            $res=CommentResource::collection($res->comments);
+            return response()->json($res,200);
+        } catch(Exception $err){
+            return response()->json(['message'=>$err->getMessage()],422);
+        }
+    }
+    public function addCommentToActivity(Request $req,string $actId){
+        try{
+            if(!preg_match("/^[0-9]+$/", $actId))
+                   return throw ValidationException::withMessages(['validation error']);
+            $newComment=new Comment();
+            $newComment->text=$req->text;
+            $newComment->name=$req->name;
+            $act=Activities::find($actId);
+            if(!$act)
+                return response()->json(['message'=>'activity not found'],404);        
+            $act->comments()->save($newComment);
+            return response()->json(['message'=>'comment sent success'],200);
+        } catch(Exception $err){
+             return response()->json(['message'=>$err->getMessage()],422);
+        }
+    }
+    public function infoForHomePage(){
+        try{
+        $last10Projects=ProjectResource::collection(Project::orderBy('id', 'desc')->take(10)->get());
+            $allOrganizations=Organization::get()->count();
+            $allProjects=Project::select('id','name','allWhoRate','rate')->get();
+            $allOrgs=Organization::select('id','user_id')->get();
+            $eachOrgWithTotalPros=[];
+            $eachProWithTotalsuggestsAndProblemsAndRateInfo=[];
+            foreach($allOrgs as $i){
+                $ownerName=$i->owner->name;
+                $totalPros=$i->projects()->count();
+                array_push($eachOrgWithTotalPros,['orgName'=>$ownerName,'totalPros'=>$totalPros]);
+            }
+            foreach($allProjects as $j){
+                $proName=$j->name;
+                $totlaSugs=$j->suggests()->count();
+                $totalProblems=$j->problems()->count();
+                array_push($eachProWithTotalsuggestsAndProblemsAndRateInfo,['ProName'=>$proName,'rateInfo'=>['rate'=>$j->rate,'allPeople'=>$j->allWhoRate],'totalSug'=>$totlaSugs,'totalProblems'=>$totalProblems]);
+            }
+            return response()->json([
+                'last10Problems'=>$last10Projects,
+                "organizationsNum"=>$allOrganizations,
+                "eachOrgWithTotalPros"=>$eachOrgWithTotalPros,
+                "eachProWithTotalsuggestsAndProblemsAndRateInfo"=>$eachProWithTotalsuggestsAndProblemsAndRateInfo
+            ],200);
+        }catch(Exception $err){
+            return response()->json(['message',$err->getMessage()],422);
+        }
+    }
 }
