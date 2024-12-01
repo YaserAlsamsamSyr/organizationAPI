@@ -260,20 +260,25 @@ class ClientController extends Controller
              $newTraffic->firstTime=true;
          else
              $newTraffic->firstTime=false;
-        $isday=Day::where('day',$day)->first();
-        if(!$isday)
-            $isday=Day::create(['day'=>$day]);
-        $isMonth=Month::where('month',$month)->first();
-        if(!$isMonth)//first time
-            $isMonth=Month::create(['month'=>$month]);
-        $isYear=Year::where('year',$year)->first();
-        if(!$isYear)//first time
-            $isYear=Year::create(['year'=>$year]);
-
         $newTraffic->save();
+        $isYear=Year::where('year',$year)->first();
+        if(!$isYear){
+            $isYear=Year::create(['year'=>$year]);
+        }
+        $isMonth=Month::where('month',$month)->first();
+        if(!$isMonth){
+            $isMonth=Month::create(['month'=>$month]);
+        }
+        if(!$isYear->months()->where('month',$month)->first())
+                $isMonth->years()->attach($isYear); 
+              
+        $isday=Day::where('day',$day)->first();
+        if(!$isday){
+            $isday=Day::create(['day'=>$day]);
+        }
+        if(!$isMonth->days()->where('day',$day)->first())
+                $isMonth->days()->attach($isday); 
         $newTraffic->days()->attach($isday);
-        $isday->months()->attach($isMonth);
-        $isMonth->years()->attach($isYear); 
          return response()->json(['message'=>'added success'],201);
         } catch(Exception $err){
             return response()->json(['message'=>$err->getMessage(),422]);
