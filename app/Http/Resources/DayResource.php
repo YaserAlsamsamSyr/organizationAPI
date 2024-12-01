@@ -4,9 +4,8 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\MonthResource;
 
-class TrafficResource extends JsonResource
+class DayResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,9 +14,13 @@ class TrafficResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $firstTime=$allTime=0;
+        $firstTime+=$this->traffics()->where('firstTime',1)->count();
+        $allTime+=$this->traffics()->count();
         return [
-            'year'=>$this->year,
-            'months'=>MonthResource::collection($this->months) 
+            'day'=>$this->day,
+            'firstTime'=>$firstTime,
+            'allTime'=>$allTime
         ];
     }
 }

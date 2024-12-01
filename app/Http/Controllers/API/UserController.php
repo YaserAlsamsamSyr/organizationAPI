@@ -23,6 +23,7 @@ use App\Models\Suggest;
 use App\Http\Resources\SuggestResource;
 use App\Http\Resources\ProblemResource;
 use App\Http\Resources\ProjectResource;
+use App\Http\Resources\TrafficResource;
 use App\Models\Activities;
 use App\Models\Detail;
 use App\Models\Number;
@@ -30,6 +31,7 @@ use App\Models\Problem;
 use App\Models\Skil;
 use App\Models\Social;
 use App\Models\Summary;
+use App\Models\Year;
 
 class UserController extends Controller
 {
@@ -631,7 +633,8 @@ class UserController extends Controller
         try{
             if(auth()->user()->role!="admin")
                 return response()->json('not authorized',422);
-            
+            // return Year::with('months','months.days','months.days.traffics')->get();
+            return response()->json(['traffic'=>TrafficResource::collection(Year::all())],200);
         } catch(Exception $err){
             return response()->json(['message'=>$err->getMessage(),422]);
         }

@@ -22,11 +22,9 @@ class ProblemRequest extends FormRequest
     public function rules(): array
     {
         $rules= [
-            'date'=> ['required', 'string', 'max:100'],
-            'number'=>['required', 'string', 'regex:/^[0-9]+$/'],
             'fullName'=> ['required', 'string', 'max:200'],
             'phone'=>['required', 'string', 'regex:/^[0-9]+$/'],
-            'email'=> ['required', 'string', 'max:500','regex:/^[a-zA-Z0-9]+@[a-zA-Z]+.[a-zA-Z]+$/'],
+            'email'=> ['nullable', 'string', 'max:500','regex:/^[a-zA-Z0-9]+@[a-zA-Z]+.[a-zA-Z]+$/'],
             'address'=> ['required', 'string', 'max:300'],
             'benifit'=> ['required', 'string', 'max:500'],
             'text'=> ['required', 'string'],

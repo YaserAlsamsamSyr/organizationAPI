@@ -56,7 +56,6 @@ class Organization extends Model
     public function suggests(){
         return $this->hasMany(Suggest::class);
     }
-    
     public function problems(){
         return $this->hasMany(Problem::class);
     }

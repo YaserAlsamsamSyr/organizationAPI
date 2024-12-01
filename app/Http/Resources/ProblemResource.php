@@ -16,8 +16,8 @@ class ProblemResource extends JsonResource
     {
         return [
             'id'=>$this->id,
-            'date'=>$this->date,
-            'number'=>$this->number,
+            'date'=>$this->created_at,
+            'number'=>$this->id,
             'fullName'=>$this->fullName,
             'phone'=>$this->phone,
             'email'=>$this->email,

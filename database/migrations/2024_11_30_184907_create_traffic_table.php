@@ -15,9 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('mac');
             $table->boolean('firstTime');
-            $table->integer('year');
-            $table->integer('month');
-            $table->integer('day');
             $table->timestamps();
         });
     }

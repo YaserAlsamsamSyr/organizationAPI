@@ -10,10 +10,8 @@ use App\Models\TypeProblem;
 class Problem extends Model
 {
     protected $fillable=[
-        'date',
         'project_id',
         'organization_id',
-        'number',
         'fullName',
         'phone',
         'email',

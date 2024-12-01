@@ -13,11 +13,9 @@ return new class extends Migration
     {
         Schema::create('problems', function (Blueprint $table) {
             $table->id();
-            $table->date('date');
-            $table->string('number');
             $table->string('fullName');
             $table->string('phone');
-            $table->string('email');
+            $table->string('email')->nullable();
             $table->string('address');
             $table->string('benifit');
             $table->string('problemDate');

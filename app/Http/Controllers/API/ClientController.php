@@ -14,26 +14,27 @@ use App\Models\Project;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\OrganizationResource;
 use App\Http\Requests\TrafficRequest;
+use App\Models\Traffic;
 use App\Http\Resources\CommentResource;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 use App\Models\Comment;
 use App\Models\Opinion;
-use App\Models\Traffic;
 use App\Models\TypeProblem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use App\Http\Resources\OnlyOrganizationResource;
 use App\Models\Activities;
+use App\Models\Day;
+use App\Models\Month;
 use App\Models\Organization;
+use App\Models\Year;
 
 class ClientController extends Controller
 {
     public function addProblem(ProblemRequest $req){
                 try{
                     $pro=new Problem();
-                    $pro->date=$req->date;
-                    $pro->number=$req->number;
                     $pro->fullName=$req->fullName;
                     $pro->phone=$req->phone;
                     $pro->email=$req->email;
@@ -42,9 +43,9 @@ class ClientController extends Controller
                     $pro->benifit=$req->benifit;
                     $pro->problemDate=$req->problemDate;
                     $pro->isPrevious=$req->isPrevious;
-                    if($req->project_id){
+                    if($req->project_id)
                         $pro->project_id=$req->project_id;
-                    } else
+                    if($req->organization_id)
                         $pro->organization_id=$req->organization_id;
                     $pro->save();
                     $newTypeProblem=[];
@@ -251,15 +252,28 @@ class ClientController extends Controller
         try{
          $newTraffic=new Traffic();
          $newTraffic->mac=$req->mac;
-         $newTraffic->day=date('d');
-         $newTraffic->month=date('m');
-         $newTraffic->year=date('y');
+         $day=date('d');
+         $month=date('m');
+         $year=date('y');
          $isFound=Traffic::where('mac',$req->mac)->first();
          if(!$isFound)//first time
              $newTraffic->firstTime=true;
          else
              $newTraffic->firstTime=false;
-         $newTraffic->save();
+        $isday=Day::where('day',$day)->first();
+        if(!$isday)
+            $isday=Day::create(['day'=>$day]);
+        $isMonth=Month::where('month',$month)->first();
+        if(!$isMonth)//first time
+            $isMonth=Month::create(['month'=>$month]);
+        $isYear=Year::where('year',$year)->first();
+        if(!$isYear)//first time
+            $isYear=Year::create(['year'=>$year]);
+
+        $newTraffic->save();
+        $newTraffic->days()->attach($isday);
+        $isday->months()->attach($isMonth);
+        $isMonth->years()->attach($isYear); 
          return response()->json(['message'=>'added success'],201);
         } catch(Exception $err){
             return response()->json(['message'=>$err->getMessage(),422]);
