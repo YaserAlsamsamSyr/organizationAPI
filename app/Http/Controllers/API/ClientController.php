@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CommentRequest;
 use App\Http\Requests\OpinionRequest;
 use App\Http\Requests\ProblemRequest;
 use App\Http\Requests\SuggestRequest;
@@ -99,7 +100,7 @@ class ClientController extends Controller
             return response()->json(['message'=>$err->getMessage()],422);
         }
     }
-    public function addComment(ProblemRequest $req,string $proId){
+    public function addComment(CommentRequest $req,string $proId){
            try{
                 if(!preg_match("/^[0-9]+$/", $proId))
                        return throw ValidationException::withMessages(['validation error']);
@@ -311,7 +312,7 @@ class ClientController extends Controller
             return response()->json(['message'=>$err->getMessage()],422);
         }
     }
-    public function addCommentToActivity(Request $req,string $actId){
+    public function addCommentToActivity(CommentRequest $req,string $actId){
         try{
             if(!preg_match("/^[0-9]+$/", $actId))
                    return throw ValidationException::withMessages(['validation error']);
