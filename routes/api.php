@@ -82,4 +82,6 @@ Route::middleware('allow')->prefix('client')->group(function(){
         Route::get('/getActivityComments/{actId}',[ClientController::class,'getActivityComments']);
         Route::post('/addCommentToActivity/{actId}',[ClientController::class,'addCommentToActivity']);
         Route::get('/infoForHomePage',[ClientController::class,'infoForHomePage']);
+        //delete comment
+        Route::delete('/deleteComment/{id}',[ClientController::class,'deleteComment']);
 });

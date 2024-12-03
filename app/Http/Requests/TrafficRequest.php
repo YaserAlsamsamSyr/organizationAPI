@@ -22,7 +22,7 @@ class TrafficRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'mac'=>['required', 'regex:/^([a-zA-Z0-9]{2}:){5}[a-zA-Z0-9]{2}$/'],
+            'mac'=>['required','string','max:30'],
         ];
     }
 }

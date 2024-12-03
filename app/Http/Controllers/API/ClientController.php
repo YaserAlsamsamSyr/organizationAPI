@@ -357,4 +357,18 @@ class ClientController extends Controller
             return response()->json(['message',$err->getMessage()],422);
         }
     }
+    public function deleteComment(string $id){
+        try{
+            if(!preg_match("/^[0-9]+$/",$id))
+                    return throw ValidationException::withMessages(['validation error']);
+            $com=Comment::find($id);
+            if(!$com)
+                return response()->json(['message'=>'this comment not found'],404);
+            if(!$com->delete())
+                return response()->json(['message'=>'delete fail'],422);
+            return response()->json(['message'=>'delete success'],200);
+        }catch(Exception $err){
+            return response()->json(['message'=>$err->getMessage()],422);
+        }
+    }
 }
