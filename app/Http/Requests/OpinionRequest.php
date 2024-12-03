@@ -23,7 +23,7 @@ class OpinionRequest extends FormRequest
     {
         return [
             'name'=> ['required', 'string', 'max:255'],
-            'mac'=>['required', 'regex:/^([a-zA-Z0-9]{2}:){5}[a-zA-Z0-9]{2}$/'],
+            'mac'=>['required', 'string','max:30'],
             'q1'=> ['required', 'string', 'max:600'],
             'q2'=> ['required', 'string', 'max:600'],
             'q3'=> ['required', 'string', 'max:600'],
