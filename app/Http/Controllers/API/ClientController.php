@@ -175,7 +175,7 @@ class ClientController extends Controller
             $pro=Project::find($proId);
             if(!$pro)
                 return response()->json(['message'=>'project not found'],404);
-            $isHere=Opinion::where('mac',$req->mac)->get();
+            $isHere=Opinion::where('mac',$req->mac)->where('project_id',$proId)->get();
             if(sizeof($isHere)>0)
                 return response()->json(['message'=>'opinion was added already'],422);   
             $opinion=new Opinion();
