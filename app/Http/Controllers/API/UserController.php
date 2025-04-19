@@ -53,11 +53,15 @@ class UserController extends Controller
             }
             $token=auth()->user()->createToken('admin',expiresAt:now()->addDays(4),abilities:['admin'])->plainTextToken;
             $adminData=new UserResource(auth()->user());
-            $allOrganizations=OrganizationResource::collection(User::where('role','org')->limit(20)->get());
+            $orgs=User::where('role','org')->limit(20)->get();
+            if(count($orgs)>0)
+               $allOrganizations=OrganizationResource::collection(User::where('role','org')->limit(20)->get());
+            else
+               $allOrganizations=[];
             return response()->json(['token'=>$token,'response'=>['admin'=>['id'=>$adminData->id,'name'=>$adminData->name,'email'=>$adminData->email],'allOrganizations'=>$allOrganizations]],200);
         }catch(Exception $err){
                 return response()->json(['message'=>$err->getMessage()],422);
-          }
+        }
     }
     public function createOrg(OrganizationRequest $req){
             try{
@@ -466,7 +470,7 @@ class UserController extends Controller
         try{
              if(auth()->user()->role!="admin")
                 return response()->json(['message'=>"not authorized"]);
-            $numItems=$req->per_page??10;
+             $numItems=$req->per_page??10;
              $sug=SuggestResource::collection(Suggest::paginate($numItems));
              return response()->json($sug,200);
         }catch(Exception $err){
