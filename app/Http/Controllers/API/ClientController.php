@@ -26,6 +26,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use App\Http\Resources\OnlyOrganizationResource;
 use App\Models\Activities;
+use Illuminate\Support\Facades\File;
 use App\Models\Day;
 use App\Models\Month;
 use App\Models\Organization;
@@ -34,6 +35,7 @@ use App\Models\Year;
 class ClientController extends Controller
 {
     public function addProblem(ProblemRequest $req){
+                $proId=-1;
                 try{
                     $pro=new Problem();
                     $pro->fullName=$req->fullName;
@@ -49,6 +51,7 @@ class ClientController extends Controller
                     if($req->organization_id)
                         $pro->organization_id=$req->organization_id;
                     $pro->save();
+                    $proId=$pro->id;
                     $newTypeProblem=[];
                     if($req->typeProblems){
                         foreach($req->typeProblems as $t)
@@ -57,6 +60,17 @@ class ClientController extends Controller
                     }
                     return response()->json(['message'=>'add success'],201);
                 }catch(Exception $err){
+                    try{
+                        if($proId>-1){
+                            $pro=Problem::find($proId);
+                            $pro->delete();
+                        }
+                    }catch(Exception $err){
+                        if($proId>-1){
+                            $pro=Problem::find($proId);
+                            $pro->delete();
+                        }
+                    }
                     return response()->json(['message'=>$err->getMessage()],422);
                 }
     }
@@ -163,7 +177,11 @@ class ClientController extends Controller
                 $headers = array(
                           'Content-Type: application/pdf',
                         );
-                return Response::download($file, $pro->name.$pro->id.'.pdf', $headers);
+                
+                if(File::exists(public_path().$pdfUrl)) {
+                    return Response::download($file, $pro->name.$pro->id.'.pdf', $headers);
+                } else
+                    return response()->json(['message'=>"no pdf found"],404);
               }catch(Exception $err){
                   return response()->json(['message'=>$err->getMessage()],422);
               }

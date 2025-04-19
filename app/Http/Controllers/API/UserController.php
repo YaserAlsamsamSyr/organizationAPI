@@ -64,6 +64,7 @@ class UserController extends Controller
         }
     }
     public function createOrg(OrganizationRequest $req){
+            $images=[];
             try{
                 if(auth()->user()->role!=="admin")
                     return throw ValidationException::withMessages(['not authorized']);
@@ -81,6 +82,7 @@ class UserController extends Controller
                     $name = uniqid().'.'.$file->getClientOriginalExtension();
                     $file->move(public_path('/images/organizations/logo'),$name);
                     $org->logo=asset('/images/organizations/logo/'.$name);
+                    array_push($images,'/images/organizations/logo/'.$name);
                 }
                 // upload multi image
                 $imgs=[];
@@ -89,6 +91,7 @@ class UserController extends Controller
                        $name = uniqid().'.'.$file->getClientOriginalExtension();
                        $file->move(public_path('/images/organizations/imgs'),$name);
                        array_push($imgs,new Image(['url'=>asset('/images/organizations/imgs/'.$name)]));
+                       array_push($images,'/images/organizations/imgs/'.$name);
                    }
                 }
                 //
@@ -125,6 +128,15 @@ class UserController extends Controller
                    $newOrg->organization->images()->saveMany($imgs);
                 return response()->json(['message'=>'added success'],201);
             }catch(Exception $err){
+                   $user=User::where('role','org')->where('email',$req->email)->first();
+                   if($user){
+                        $user->delete();
+                        foreach($images as $i){
+                            if(File::exists(public_path().$i)) {
+                                File::delete(public_path().$i);
+                            }
+                        }
+                    }
                    return response()->json(['message'=>$err->getMessage(),422]);
             }
     }
@@ -186,19 +198,11 @@ class UserController extends Controller
                         File::delete(public_path().'/images/'.$n);
                     }
                 }
-                //
                 $org->organization->logo=asset('/images/organizations/logo/'.$name);
+                
+                //
             }
             //
-            // upload multi image
-            $imgs=[];
-            if($req->hasfile('images')) {
-               foreach($req->file('images') as $file) {
-                   $name = uniqid().'.'.$file->getClientOriginalExtension();
-                   $file->move(public_path('/images/organizations/imgs'),$name);
-                   array_push($imgs,new Image(['url'=>asset('/images/organizations/imgs/'.$name)]));
-               }
-            }
             //
             $org->organization->view=$req->view;
             $org->organization->message=$req->message;
@@ -210,31 +214,49 @@ class UserController extends Controller
             if($req->details){
                 foreach($req->details as $det) 
                    array_push($data,new Detail(['text'=>$det['text']]));
-                $org->organization->details()->delete();
+                if(sizeof($org->organization->details()->get())>0)
+                   $org->organization->details()->delete();
                 $org->organization->details()->saveMany($data);
                 $data=[];
             }
+
             if($req->skils){
                 foreach($req->skils as $skil) 
                    array_push($data,new Skil(['text'=>$skil['text']]));  
-                $org->organization->skils()->delete();      
+                if(sizeof($org->organization->skils()->get())>0)
+                    $org->organization->skils()->delete();      
                 $org->organization->skils()->saveMany($data);
                 $data=[];
             }
+  
+
             if($req->number){
                 foreach($req->number as $number) 
                    array_push($data,new Number(['type'=>$number['type'],'number'=>$number['number']]));
-                $org->organization->numbers()->delete();
+                if(sizeof($org->organization->numbers()->get())>0)
+                    $org->organization->numbers()->delete();
                 $org->organization->numbers()->saveMany($data);    
                 $data=[];
             }
+            
             if($req->socials){
                 foreach($req->socials as $socials) 
                    array_push($data,new Social(['type'=>$socials['type'],'url'=>$socials['url']]));
-                $org->organization->socials()->delete();
+                if(sizeof($org->organization->socials()->get())>0)
+                   $org->organization->socials()->delete();
                 $org->organization->socials()->saveMany($data);    
             }
+
             /////////////////////////////////////////////////////////////
+            // upload multi image
+            $imgs=[];
+            if($req->hasfile('images')) {
+               foreach($req->file('images') as $file) {
+                   $name = uniqid().'.'.$file->getClientOriginalExtension();
+                   $file->move(public_path('/images/organizations/imgs'),$name);
+                   array_push($imgs,new Image(['url'=>asset('/images/organizations/imgs/'.$name)]));
+               }
+            }
             if(sizeof($imgs)!==0){
                 //delete old images
                 for($i=0;$i<sizeof($org->organization->images);$i++){
@@ -243,7 +265,8 @@ class UserController extends Controller
                         File::delete(public_path().'/images/'.$n);
                     }
                 }
-                $org->organization->images()->delete();
+                if(sizeof($org->organization->images)>0)
+                    $org->organization->images()->delete();
                 //
                 $org->organization->images()->saveMany($imgs);
             }
@@ -253,6 +276,8 @@ class UserController extends Controller
         }
     }
     public function createPro(ProjectRequest $req,string $orgId){
+        $proId=-1;
+        $imgss=[];
         try{
             if(auth()->user()->role!=="admin")
                 return throw ValidationException::withMessages(['not authorized']);
@@ -266,6 +291,9 @@ class UserController extends Controller
                 $file=$req->file('logo');
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/projects/logo'),$name);
+                //
+                array_push($imgss,'/images/projects/logo/'.$name);
+                //
                 $pro->logo=asset('/images/projects/logo/'.$name);
             }
             //
@@ -278,6 +306,9 @@ class UserController extends Controller
                 $file=$req->file('pdfURL');
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/projects/pdfs'),$name);
+                //
+                array_push($imgss,'/images/projects/pdfs/'.$name);
+                //
                 $pro->pdfURL=asset('/images/projects/pdfs/'.$name);
             }
             //
@@ -288,6 +319,9 @@ class UserController extends Controller
                 $file=$req->file('videoLogo');
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/projects/logo'),$name);
+                //
+                array_push($imgss,'/images/projects/logo/'.$name);
+                //
                 $pro->videoLogo=asset('/images/projects/logo/'.$name);
             }
             //
@@ -297,6 +331,9 @@ class UserController extends Controller
                foreach($req->file('images') as $file) {
                    $name = uniqid().'.'.$file->getClientOriginalExtension();
                    $file->move(public_path('/images/projects/imgs'),$name);
+                   //
+                   array_push($imgss,'/images/projects/imgs/'.$name);
+                   //
                    array_push($imgs,new Image(['url'=>asset('/images/projects/imgs/'.$name)]));
                }    
             }
@@ -305,6 +342,7 @@ class UserController extends Controller
             if(!$user)
                 return response()->json(['message'=>'this organization not found'],404);
             $pro=$user->organization->projects()->save($pro);
+            $proId=$pro->id;
             $summaries=[];
             if($req->summaries){
                 foreach($req->summaries as $sam) 
@@ -315,6 +353,32 @@ class UserController extends Controller
                 $pro->images()->saveMany($imgs);
             return response()->json(['message'=>'added success','proId'=>$pro->id],201);
         } catch(Exception $err){
+               if($proId>-1){
+                     try{
+                        $pro=Project::find($proId);
+                        $pro->delete();
+                     }catch(Exception $err){
+                        $pro=Project::find($proId);
+                        $pro->delete();
+                     }
+                }
+                try{
+                    if(sizeof($imgss)>0){
+                       foreach($imgss as $i){
+                           if(File::exists(public_path().$i)) {
+                               File::delete(public_path().$i);
+                           }
+                       }
+                    }
+                }catch(Exception $err){
+                   if(sizeof($imgss)>0){
+                       foreach($imgss as $i){
+                           if(File::exists(public_path().$i)) {
+                               File::delete(public_path().$i);
+                           }
+                       }
+                    }
+                }
                return response()->json(['message'=>$err->getMessage(),422]);
         }
     }
@@ -341,6 +405,12 @@ class UserController extends Controller
             }
             if($pro->pdfURL!=="no pdf"){
                 $n=explode("/images/",$pro->pdfURL)[1];
+                if(File::exists(public_path().'/images/'.$n)) {
+                    File::delete(public_path().'/images/'.$n);
+                }
+            }
+            if($pro->videoLogo!="no image"){
+                $n=explode("/images/",$pro->videoLogo)[1];
                 if(File::exists(public_path().'/images/'.$n)) {
                     File::delete(public_path().'/images/'.$n);
                 }
@@ -446,7 +516,8 @@ class UserController extends Controller
             if($req->summaries){
                 foreach($req->summaries as $sam) 
                    array_push($summaries,new Summary(['text'=>$sam['text'],'type'=>$sam['type']]));
-                $pro->summaries()->delete();
+                if(sizeof($pro->summaries()->get())>0)
+                    $pro->summaries()->delete();
                 $pro->summaries()->saveMany($summaries);
             }
             if(sizeof($imgs)!==0){
@@ -457,7 +528,8 @@ class UserController extends Controller
                         File::delete(public_path().'/images/'.$n);
                     }
                 }
-                $pro->images()->delete();
+                if(sizeof($pro->images()->get())>0)
+                    $pro->images()->delete();
                 //
                 $pro->images()->saveMany($imgs);
             }
@@ -644,6 +716,8 @@ class UserController extends Controller
         }
     }
     public function createActivity(ActivitiesRequest $req,string $proId){
+            $actId=-1;
+            $imgss=[];
             try{
                 if(!preg_match("/^[0-9]+$/", $proId))
                      return throw ValidationException::withMessages(['validation err']);
@@ -653,6 +727,7 @@ class UserController extends Controller
                     $file=$req->file('pdf');
                     $name = uniqid().'.'.$file->getClientOriginalExtension();
                     $file->move(public_path('/images/projects/pdfs'),$name);
+                    array_push($imgss,'/images/projects/pdfs/'.$name);
                     $act['pdf']=asset('/images/projects/pdfs/'.$name);
                 }
                 //
@@ -663,6 +738,7 @@ class UserController extends Controller
                     $file=$req->file('videoImg');
                     $name = uniqid().'.'.$file->getClientOriginalExtension();
                     $file->move(public_path('/images/projects/logo'),$name);
+                    array_push($imgss,'/images/projects/logo/'.$name);
                     $act['videoImg']=asset('/images/projects/logo/'.$name);
                 }
                 //
@@ -670,12 +746,14 @@ class UserController extends Controller
                 if(!$pro)
                     return response()->json(['message'=>'this project not found'],404);
                 $newAct=$pro->activities()->save(new Activities($act));
+                $actId=$newAct->id;
                 // upload multi image
                 $img=[];
                 if($req->hasfile('images')) {
                    foreach($req->file('images') as $file) {
                        $name = uniqid().'.'.$file->getClientOriginalExtension();
                        $file->move(public_path('/images/projects/imgs'),$name);
+                       array_push($imgss,'/images/projects/imgs/'.$name);
                        array_push($img,new Image(['url'=>asset('/images/projects/imgs/'.$name)]));
                    }
                 }
@@ -683,6 +761,32 @@ class UserController extends Controller
                     $newAct->images()->saveMany($img);
                 return response()->json(['message'=>'add success'],201);
             } catch(Exception $err){
+                if($actId>-1){
+                    try{
+                       $act=Activities::find($actId);
+                       $act->delete();
+                    }catch(Exception $err){
+                       $act=Activities::find($actId);
+                       $act->delete();
+                    }
+                }
+                try{
+                    if(sizeof($imgss)>0){
+                       foreach($imgss as $i){
+                           if(File::exists(public_path().$i)) {
+                               File::delete(public_path().$i);
+                           }
+                       }
+                    }
+                }catch(Exception $err){
+                   if(sizeof($imgss)>0){
+                       foreach($imgss as $i){
+                           if(File::exists(public_path().$i)) {
+                               File::delete(public_path().$i);
+                           }
+                       }
+                    }
+                }
                 return response()->json(['message'=>$err->getMessage()],422);
             }
     }
@@ -761,6 +865,27 @@ class UserController extends Controller
             $act=Activities::find($actId);
             if(!$act)
                  return response()->json(['message'=>'this activity not found'],404);
+            //delete all image and pdf
+            if($act->videoImg!=="no image"){
+                $n=explode("/images/",$act->videoImg)[1];
+                if(File::exists(public_path().'/images/'.$n)) {
+                    File::delete(public_path().'/images/'.$n);
+                }
+            }
+            if($act->pdf!=="no pdf"){
+                $n=explode("/images/",$act->pdf)[1];
+                if(File::exists(public_path().'/images/'.$n)) {
+                    File::delete(public_path().'/images/'.$n);
+                }
+            }
+            $imggs=$act->images;
+            for($i=0;$i<sizeof($imggs);$i++){
+                $n=explode("/images/",$imggs[$i]->url)[1];
+                if(File::exists(public_path().'/images/'.$n)) {
+                    File::delete(public_path().'/images/'.$n);
+                }
+            }
+            //
             if(!$act->delete())
                 return response()->json(['message'=>'delete fail'],422);
             return response()->json(['message'=>'delete success'],200);

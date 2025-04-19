@@ -22,6 +22,8 @@ use Illuminate\Http\Request;
 class OrganizationController extends Controller
 {
     public function createPro(ProjectRequest $req){
+        $proId=-1;
+        $imgss=[];
         try{
             if(auth()->user()->role!=="org")
                 return throw ValidationException::withMessages(['not authorized']);
@@ -33,6 +35,9 @@ class OrganizationController extends Controller
                 $file=$req->file('logo');
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/projects/logo'),$name);
+                //
+                array_push($imgss,'/images/projects/logo/'.$name);
+                //
                 $pro->logo=asset('/images/projects/logo/'.$name);
             }
             //
@@ -45,6 +50,9 @@ class OrganizationController extends Controller
                 $file=$req->file('pdfURL');
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/projects/pdfs'),$name);
+                //
+                array_push($imgss,'/images/projects/pdfs/'.$name);
+                //
                 $pro->pdfURL=asset('/images/projects/pdfs/'.$name);
             }
             //
@@ -55,6 +63,9 @@ class OrganizationController extends Controller
                 $file=$req->file('videoLogo');
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/projects/logo'),$name);
+                //
+                array_push($imgss,'/images/projects/logo/'.$name);
+                //
                 $pro->videoLogo=asset('/images/projects/logo/'.$name);
             }
             //
@@ -64,11 +75,15 @@ class OrganizationController extends Controller
                foreach($req->file('images') as $file) {
                    $name = uniqid().'.'.$file->getClientOriginalExtension();
                    $file->move(public_path('/images/projects/imgs'),$name);
+                   //
+                   array_push($imgss,'/images/projects/imgs/'.$name);
+                   //
                    array_push($imgs,new Image(['url'=>asset('/images/projects/imgs/'.$name)]));
                }
             }
             //
             $pro=auth()->user()->organization->projects()->save($pro);
+            $proId=$pro->id;
             $summaries=[];
             if($req->summaries){
                 foreach($req->summaries as $sam) 
@@ -79,6 +94,32 @@ class OrganizationController extends Controller
                 $pro->images()->saveMany($imgs);
             return response()->json(['message'=>'added success','proId'=>$pro->id],201);
         } catch(Exception $err){
+                if($proId>-1){
+                     try{
+                        $pro=Project::find($proId);
+                        $pro->delete();
+                     } catch(Exception $err){
+                        $pro=Project::find($proId);
+                        $pro->delete();
+                     }
+                }
+                try{
+                    if(sizeof($imgss)>0){
+                       foreach($imgss as $i){
+                           if(File::exists(public_path().$i)) {
+                               File::delete(public_path().$i);
+                           }
+                       }
+                    }
+                }catch(Exception $err){
+                   if(sizeof($imgss)>0){
+                       foreach($imgss as $i){
+                           if(File::exists(public_path().$i)) {
+                               File::delete(public_path().$i);
+                           }
+                       }
+                    }
+                }
                return response()->json(['message'=>$err->getMessage(),422]);
         }
     }
@@ -100,6 +141,12 @@ class OrganizationController extends Controller
             }
             if($pro->pdfURL!="no pdf"){
                 $n=explode("/images/",$pro->pdfURL)[1];
+                if(File::exists(public_path().'/images/'.$n)) {
+                    File::delete(public_path().'/images/'.$n);
+                }
+            }
+            if($pro->videoLogo!="no image"){
+                $n=explode("/images/",$pro->videoLogo)[1];
                 if(File::exists(public_path().'/images/'.$n)) {
                     File::delete(public_path().'/images/'.$n);
                 }
@@ -200,7 +247,8 @@ class OrganizationController extends Controller
             if($req->summaries){
                 foreach($req->summaries as $sam) 
                    array_push($summaries,new Summary(['text'=>$sam['text'],'type'=>$sam['type']]));
-                $pro->summaries()->delete();
+                if(sizeof($pro->summaries()->get())>0)
+                    $pro->summaries()->delete();
                 $pro->summaries()->saveMany($summaries);
             }
             if(sizeof($imgs)!==0){
@@ -211,7 +259,8 @@ class OrganizationController extends Controller
                         File::delete(public_path().'/images/'.$n);
                     }
                 }
-                $pro->images()->delete();
+                if(sizeof($pro->images()->get())>0)
+                    $pro->images()->delete();
                 //
                 $pro->images()->saveMany($imgs);
             }
@@ -266,28 +315,32 @@ class OrganizationController extends Controller
             if($req->details){
                 foreach($req->details as $det) 
                    array_push($data,new Detail(['text'=>$det['text']]));
-                $org->organization->details()->delete();
+                if(sizeof($org->organization->details()->get())>0)
+                    $org->organization->details()->delete();
                 $org->organization->details()->saveMany($data);
                 $data=[];
             }
             if($req->skils){
                 foreach($req->skils as $skil) 
                    array_push($data,new Skil(['text'=>$skil['text']]));  
-                $org->organization->skils()->delete();      
+                if(sizeof($org->organization->skils()->get())>0)
+                    $org->organization->skils()->delete();      
                 $org->organization->skils()->saveMany($data);
                 $data=[];
             }
             if($req->number){
                 foreach($req->number as $number) 
                    array_push($data,new Number(['type'=>$number['type'],'number'=>$number['number']]));
-                $org->organization->numbers()->delete();
+                if(sizeof($org->organization->numbers()->get())>0)
+                    $org->organization->numbers()->delete();
                 $org->organization->numbers()->saveMany($data);    
                 $data=[];
             }
             if($req->socials){
                 foreach($req->socials as $socials) 
                    array_push($data,new Social(['type'=>$socials['type'],'url'=>$socials['url']]));
-                $org->organization->socials()->delete();
+                if(sizeof($org->organization->numbers()->get())>0)
+                    $org->organization->numbers()->delete();
                 $org->organization->socials()->saveMany($data);    
             }
             ////////////////
@@ -299,7 +352,8 @@ class OrganizationController extends Controller
                         File::delete(public_path().'/images/'.$n);
                     }
                 }
-                $org->organization->images()->delete();
+                if(sizeof($org->organization->images()->get())>0)
+                    $org->organization->images()->delete();
                 //
                 $org->organization->images()->saveMany($imgs);
             }
