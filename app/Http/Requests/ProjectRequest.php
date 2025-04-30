@@ -22,8 +22,8 @@ class ProjectRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'name'=> ['required', 'string', 'max:255'],
-            'address'=> ['required', 'string', 'max:500'],
+            'name'=> ['required', 'string'],
+            'address'=> ['required', 'string'],
             'logo'=>['nullable','image','mimes:jpeg,jpg,png,gif'], 
             'videoLogo'=>['nullable','image','mimes:jpeg,jpg,png,gif'],
             'start_At'=>['required','date'],
@@ -32,10 +32,10 @@ class ProjectRequest extends FormRequest
             'benefitUnd'=>['required', 'string', 'max:15','regex:/^[0-9]+$/'],
             'rate'=>['nullable', 'string', 'max:15','regex:/^[0-9]+$/'],
             'pdfURL'=>['nullable',"mimes:pdf"],
-            'videoURL'=>['nullable', 'string', 'max:1000'],
+            'videoURL'=>['nullable', 'string'],
             "summaries"=>["nullable",'array',"min:1"],
             'summaries.*.text' => ['nullable', 'string'],
-            'summaries.*.type' => ['nullable', 'string', 'max:10000'],
+            'summaries.*.type' => ['nullable', 'string'],
             "images"=>["nullable",'array',"min:1"],
             "images.*"=>['nullable','image','mimes:jpeg,jpg,png,gif'],
         ];

@@ -22,16 +22,16 @@ class ProblemRequest extends FormRequest
     public function rules(): array
     {
         $rules= [
-            'fullName'=> ['required', 'string', 'max:200'],
+            'fullName'=> ['required', 'string'],
             'phone'=>['required', 'string', 'regex:/^[0-9]+$/'],
             'email'=> ['nullable', 'string', 'max:500','regex:/^[a-zA-Z0-9]+@[a-zA-Z]+.[a-zA-Z]+$/'],
-            'address'=> ['required', 'string', 'max:300'],
-            'benifit'=> ['required', 'string', 'max:500'],
+            'address'=> ['required', 'string'],
+            'benifit'=> ['required', 'string'],
             'text'=> ['required', 'string'],
-            'problemDate'=> ['required', 'string', 'max:100'],
-            'isPrevious'=> ['required', 'string', 'max:500'],
+            'problemDate'=> ['required', 'string'],
+            'isPrevious'=> ['required', 'string'],
             'typeProblems'=>['nullable','array','min:1'],
-            'typeProblems.*.type' => ['nullable', 'string', 'max:400']
+            'typeProblems.*.type' => ['nullable', 'string']
         ];
         return $rules;
     }

@@ -23,7 +23,7 @@ class CommentRequest extends FormRequest
     {
         return [
             'text'=>['required', 'string'],
-            'name'=>['required', 'string', 'max:200']
+            'name'=>['required', 'string']
         ];
     }
 }

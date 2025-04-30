@@ -16,8 +16,8 @@ return new class extends Migration
             $table->timestamps();
             $table->integer("experience");
             $table->string("logo")->default("no image");
-            $table->string("view");
-            $table->string("message");
+            $table->longText("view");
+            $table->longText("message");
             $table->string("address");
             $table->string("phone");
             $table->foreignId("user_id")->references('id')->on('users')->onDelete('cascade');     

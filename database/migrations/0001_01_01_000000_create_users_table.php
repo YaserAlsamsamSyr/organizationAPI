@@ -18,7 +18,6 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('role')->default('org');
-            // $table->unsignedBigInteger('admin_id');
             $table->foreignId('admin_id')->nullable()->references('id')->on('users')->onDelete('cascade');
             $table->rememberToken();
             $table->timestamps();

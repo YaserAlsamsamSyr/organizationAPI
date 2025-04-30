@@ -23,8 +23,8 @@ class ActivitiesRequest extends FormRequest
     {
         return [
             'text' => ['required', 'string'],
-            'type' => ['required', 'string', 'max:10000'],
-            'videoUrl' => ['nullable', 'string', 'max:800'],
+            'type' => ['required', 'string'],
+            'videoUrl' => ['nullable', 'string'],
             'videoImg' => ['nullable','image','mimes:jpeg,jpg,png,gif'],
             'pdf' => ['nullable',"mimes:pdf"],
             'activities.*.images' => ["nullable",'array',"min:1"],
