@@ -158,6 +158,28 @@ class OrganizationController extends Controller
                     File::delete(public_path().'/images/'.$n);
                 }
             }
+            // new
+            $activities=$pro->activities;
+            for($j=0;$j<sizeof($activities);$j++){
+                for($i=0;$i<sizeof($activities[$j]->images);$i++){
+                    $n=explode("/images/",$activities[$j]->images[$i]->url)[1];
+                    if(File::exists(public_path().'/images/'.$n)) {
+                        File::delete(public_path().'/images/'.$n);
+                    }
+                }
+                if($activities[$j]->videoImg!=="no image"){
+                    $n=explode("/images/",$activities[$j]->videoImg)[1];
+                    if(File::exists(public_path().'/images/'.$n)) {
+                        File::delete(public_path().'/images/'.$n);
+                    }
+                }
+                if($activities[$j]->pdf!=="no pdf"){
+                    $n=explode("/images/",$activities[$j]->pdf)[1];
+                    if(File::exists(public_path().'/images/'.$n)) {
+                        File::delete(public_path().'/images/'.$n);
+                    }
+                }
+            }
             //
             if(!$pro->delete())
                 return throw ValidationException::withMessages(['delete error']);
@@ -167,6 +189,7 @@ class OrganizationController extends Controller
         }
     }
     public function updatePro(ProjectRequest $req,string $proId){
+        $images=[];
         try{
             if(auth()->user()->role!="org")
                return response()->json(['message'=>"not authorized"]);
@@ -182,6 +205,7 @@ class OrganizationController extends Controller
                 $file=$req->file('logo');
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/projects/logo'),$name);
+                array_push($images,'/images/projects/logo/'.$name);
                 //delete old logo
                 if($pro->logo!="no logo"){
                     $n=explode("/images/",$pro->logo)[1];
@@ -204,6 +228,7 @@ class OrganizationController extends Controller
                 $file=$req->file('pdfURL');
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/projects/pdfs'),$name);
+                array_push($images,'/images/projects/pdfs/'.$name);
                 //delete old pdf
                 if($pro->pdfURL!="no pdf"){
                     $n=explode("/images/",$pro->pdfURL)[1];
@@ -222,6 +247,7 @@ class OrganizationController extends Controller
                 $file=$req->file('videoLogo');
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/projects/logo'),$name);
+                array_push($images,'/images/projects/logo/'.$name);
                 //delete old logo
                 if($pro->videoLogo){
                     $n=explode("/images/",$pro->videoLogo)[1];
@@ -238,6 +264,7 @@ class OrganizationController extends Controller
                foreach($req->file('images') as $file) {
                    $name = uniqid().'.'.$file->getClientOriginalExtension();
                    $file->move(public_path('/images/projects/imgs'),$name);
+                   array_push($images,'/images/projects/imgs/'.$name);
                    array_push($imgs,new Image(['url'=>asset('/images/projects/imgs/'.$name)]));
                }
             }
@@ -266,10 +293,16 @@ class OrganizationController extends Controller
             }
             return response()->json(['message'=>'update success'],200);
         }catch(Exception $err){
+            foreach($images as $i){
+                if(File::exists(public_path().$i)) {
+                    File::delete(public_path().$i);
+                }
+            }
             return response()->json(['message'=>$err->getMessage(),422]);
         }
     }
     public function updateMyProfile(OrganizationRequest $req){
+        $images=[];
         try{
             if(auth()->user()->role!="org")
                return response()->json(['message'=>"not authorized"]);
@@ -284,6 +317,7 @@ class OrganizationController extends Controller
                 $file=$req->file('logo');
                 $name = uniqid().'.'.$file->getClientOriginalExtension();
                 $file->move(public_path('/images/organizations/logo'),$name);
+                array_push($images,'/images/organizations/logo/'.$name);
                 //delete old logo
                 if($org->logo!="no logo"){
                     $n=explode("/images/",$org->organization->logo)[1];
@@ -301,6 +335,7 @@ class OrganizationController extends Controller
                foreach($req->file('images') as $file) {
                    $name = uniqid().'.'.$file->getClientOriginalExtension();
                    $file->move(public_path('/images/organizations/imgs'),$name);
+                   array_push($images,'/images/organizations/imgs/'.$name);
                    array_push($imgs,new Image(['url'=>asset('/images/organizations/imgs/'.$name)]));
                }
             }
@@ -359,6 +394,11 @@ class OrganizationController extends Controller
             }
             return response()->json(['message'=>'update success'],200);
         }catch(Exception $err){
+            foreach($images as $i){
+                if(File::exists(public_path().$i)) {
+                    File::delete(public_path().$i);
+                }
+            }
             return response()->json(['message'=>$err->getMessage(),422]);
         }
     }
